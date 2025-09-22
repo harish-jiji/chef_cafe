@@ -354,8 +354,8 @@ function initHeroSlideshow(container) {
         { 
             type: 'video', 
             src: isMobile ? 
-                'https://cdn.coverr.co/videos/coverr-frying-pan-on-a-stove-0144/720p.mp4' : 
-                'https://cdn.coverr.co/videos/coverr-frying-pan-on-a-stove-0144/1080p.mp4', 
+                'images/hero/firstlook.mp4' : 
+                'images/hero/firstlook.mp4', 
             duration: null 
         },
         { 
@@ -402,6 +402,7 @@ function initHeroSlideshow(container) {
     const prevBtn = document.querySelector('.hero-prev');
     const nextBtn = document.querySelector('.hero-next');
     const toggleBtn = document.querySelector('.hero-toggle');
+    const muteBtn = document.querySelector('.hero-mute');
     let dots = [];
     if (dotsContainer) {
         dots = playlist.map((_, i) => {
@@ -427,6 +428,20 @@ function initHeroSlideshow(container) {
             toggleBtn.innerHTML = '<i class="fas fa-play"></i>';
             toggleBtn.setAttribute('aria-label', 'Play slideshow');
             if (timer) clearTimeout(timer);
+        }
+    });
+
+    muteBtn && muteBtn.addEventListener('click', () => {
+        const video = elements[index].el;
+        if (video.tagName === 'VIDEO') {
+            video.muted = !video.muted;
+            if (video.muted) {
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                muteBtn.setAttribute('aria-label', 'Unmute video');
+            } else {
+                muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                muteBtn.setAttribute('aria-label', 'Mute video');
+            }
         }
     });
 

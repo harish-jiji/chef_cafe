@@ -312,11 +312,30 @@ iframe {
     inset: 0;
     display: grid;
     grid-template-columns: auto 1fr auto;
-    align-items: end;
+    grid-template-rows: 1fr auto;
+    align-items: center;
     padding: 20px;
     gap: 10px;
     z-index: 3;
     pointer-events: none;
+}
+
+.hero-prev { grid-column: 1; grid-row: 1; justify-self: start; }
+.hero-next { grid-column: 3; grid-row: 1; justify-self: end; }
+.hero-dots { grid-column: 2; grid-row: 2; align-self: end; padding-bottom: 10px; }
+
+.hero-mute {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 4;
+}
+
+.hero-toggle {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 4;
 }
 
 .hero-btn {
@@ -350,23 +369,13 @@ iframe {
     transform: translateY(0) scale(0.95);
 }
 
-.hero-prev { justify-self: start; align-self: center; }
-.hero-next { justify-self: end; align-self: center; }
-
-.hero-toggle {
-    position: absolute;
-    right: 20px;
-    bottom: 20px;
-    background: rgba(0,0,0,0.7);
-    border: 2px solid rgba(255,255,255,0.8);
-}
-
 .hero-dots {
     display: flex;
     gap: 12px;
     justify-content: center;
     align-items: center;
     padding: 0 20px;
+    pointer-events: auto;
 }
 
 .hero-dot {
