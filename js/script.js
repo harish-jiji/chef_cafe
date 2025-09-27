@@ -354,8 +354,8 @@ function initHeroSlideshow(container) {
         { 
             type: 'video', 
             src: isMobile ? 
-                'images/hero/firstlook.mp4' : 
-                'images/hero/firstlook.mp4', 
+                'images/hero/intro.mp4' : 
+                'images/hero/intro.mp4', 
             duration: null 
         },
         { 
