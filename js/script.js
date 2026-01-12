@@ -164,7 +164,7 @@ function attachMenuImages() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', attachMenuImages);
+// document.addEventListener('DOMContentLoaded', attachMenuImages);
 
 
 // Animate elements on scroll
