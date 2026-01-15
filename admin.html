@@ -88,11 +88,33 @@
     </div>
 
     <!-- Firebase v8 -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+        import {
+            getFirestore
+        } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-    <script src="admin.js"></script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAON6aij8dNGoRlJ1DdLcwMkPZsAGe-SBQ",
+            authDomain: "chef-s-cafe.firebaseapp.com",
+            projectId: "chef-s-cafe",
+            storageBucket: "chef-s-cafe.firebasestorage.app",
+            messagingSenderId: "623426909086",
+            appId: "1:623426909086:web:b4c16775db67b1485b5c8f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // TEMP TEST (remove later)
+        console.log("Firebase initialized", app);
+    </script>
 </body>
 
 </html>
