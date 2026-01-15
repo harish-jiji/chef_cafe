@@ -838,7 +838,7 @@
 
         
 -->
-</div>
+        </div>
     </section>
 
     <!-- Footer -->
@@ -888,10 +888,16 @@
     <script>
         const menuContainer = document.getElementById("menu-container");
 
+        console.log("Menu container:", menuContainer);
+
         db.collection("menu_items").onSnapshot(snapshot => {
+            console.log("Snapshot size:", snapshot.size);
+
             menuContainer.innerHTML = "";
 
             snapshot.forEach(doc => {
+                console.log("Item:", doc.data());
+
                 const item = doc.data();
 
                 menuContainer.innerHTML += `
@@ -903,6 +909,8 @@
         </div>
       `;
             });
+        }, error => {
+            console.error("Firestore error:", error);
         });
     </script>
 
