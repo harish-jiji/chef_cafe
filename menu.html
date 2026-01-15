@@ -103,7 +103,29 @@
     <!-- Menu Items -->
     <section class="menu-items">
         <div class="container">
-            <div id="menu-container"></div>
+            <div id="menu-container">
+
+                <div class="menu-section" id="soup">
+                    <h2 class="menu-section-title">Soups</h2>
+                    <div class="menu-grid"></div>
+                </div>
+
+                <div class="menu-section" id="starter">
+                    <h2 class="menu-section-title">Starter</h2>
+                    <div class="menu-grid"></div>
+                </div>
+
+                <div class="menu-section" id="maincourses">
+                    <h2 class="menu-section-title">Main Courses</h2>
+                    <div class="menu-grid"></div>
+                </div>
+
+                <div class="menu-section" id="chefspecial">
+                    <h2 class="menu-section-title">Chef’s Special</h2>
+                    <div class="menu-grid"></div>
+                </div>
+
+            </div>
         </div>
     </section>
 
@@ -152,16 +174,25 @@
     </script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const menuContainer = document.getElementById("menu-container");
+        const sections = document.querySelectorAll(".menu-section");
 
-            db.collection("menu_items").onSnapshot(snapshot => {
-                menuContainer.innerHTML = "";
+        // Clear grids
+        sections.forEach(section => {
+            section.querySelector(".menu-grid").innerHTML = "";
+        });
 
-                snapshot.forEach(doc => {
-                    const item = doc.data();
+        db.collection("menu_items").onSnapshot(snapshot => {
 
-                    menuContainer.innerHTML += `
+            snapshot.forEach(doc => {
+                const item = doc.data();
+
+                // Match Firebase category with section ID
+                const section = document.getElementById(item.category);
+                if (!section) return;
+
+                const grid = section.querySelector(".menu-grid");
+
+                grid.innerHTML += `
         <div class="menu-item">
           <div class="menu-item-content">
             <h3>${item.name}</h3>
@@ -169,8 +200,8 @@
           <div class="menu-price">₹${item.price}</div>
         </div>
       `;
-                });
             });
+
         });
     </script>
 
