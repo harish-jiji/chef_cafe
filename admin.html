@@ -398,17 +398,17 @@
     <div id="loginBox">
         <h2>🍽️ Admin Login</h2>
         <p>Welcome back! Please login to continue.</p>
-        
+
         <div class="input-group">
             <label for="email">Email Address</label>
             <input type="email" id="email" placeholder="admin@chefscafe.com">
         </div>
-        
+
         <div class="input-group">
             <label for="password">Password</label>
             <input type="password" id="password" placeholder="Enter your password">
         </div>
-        
+
         <button id="loginBtn">Login to Dashboard</button>
     </div>
 
@@ -427,18 +427,18 @@
 
         <section class="add-item-card">
             <h3>➕ Add New Menu Item</h3>
-            
+
             <div class="form-grid">
                 <div class="form-group">
                     <label for="name">Item Name</label>
                     <input id="name" placeholder="e.g., Chicken Biryani">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="price">Price</label>
                     <input id="price" type="text" placeholder="₹100 / As Per Size">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="category">Category</label>
                     <select id="category">
@@ -459,7 +459,7 @@
                     </select>
                 </div>
             </div>
-            
+
             <button id="addItemBtn">Add Item to Menu</button>
         </section>
 
@@ -531,7 +531,7 @@
         // ============================================
         // UTILITY FUNCTIONS
         // ============================================
-        
+
         /**
          * Show a user-friendly toast notification
          */
@@ -614,7 +614,7 @@
         // ============================================
         // EDIT & DELETE FUNCTIONS (Global Scope)
         // ============================================
-        
+
         /**
          * Enable edit mode for a menu item
          */
@@ -623,7 +623,7 @@
             if (card) {
                 card.querySelector(".view-mode").style.display = "none";
                 card.querySelector(".edit-mode").style.display = "block";
-                
+
                 // Focus on the name input
                 const nameInput = card.querySelector(`#name-${id}`);
                 if (nameInput) nameInput.focus();
@@ -647,7 +647,7 @@
         window.saveEdit = async (id) => {
             const nameField = document.getElementById(`name-${id}`);
             const priceField = document.getElementById(`price-${id}`);
-            
+
             const newName = nameField.value.trim();
             const newPrice = priceField.value.trim();
 
@@ -671,9 +671,9 @@
                     price: newPrice,
                     updatedAt: new Date().toISOString()
                 });
-                
+
                 showNotification('✅ Item updated successfully!', 'success');
-                
+
                 // Return to view mode
                 window.cancelEdit(id);
             } catch (err) {
@@ -688,7 +688,7 @@
         window.deleteItem = async (id) => {
             // Custom confirmation dialog
             const confirmed = confirm("⚠️ Are you sure you want to delete this item?\n\nThis action cannot be undone.");
-            
+
             if (confirmed) {
                 try {
                     await deleteDoc(doc(db, "menu_items", id));
@@ -703,7 +703,7 @@
         // ============================================
         // RENDER FUNCTIONS
         // ============================================
-        
+
         /**
          * Format category name for display
          */
@@ -799,7 +799,7 @@
         // ============================================
         // AUTHENTICATION HANDLERS
         // ============================================
-        
+
         /**
          * Handle user login
          */
@@ -827,10 +827,10 @@
                     showNotification('✅ Login successful! Welcome back.', 'success');
                 } catch (err) {
                     console.error('Login error:', err);
-                    
+
                     // User-friendly error messages
                     let errorMessage = 'Login failed. Please try again.';
-                    
+
                     if (err.code === 'auth/invalid-credential') {
                         errorMessage = 'Invalid email or password';
                     } else if (err.code === 'auth/user-not-found') {
@@ -842,7 +842,7 @@
                     } else if (err.code === 'auth/network-request-failed') {
                         errorMessage = 'Network error. Check your connection';
                     }
-                    
+
                     showNotification(errorMessage, 'error');
                 } finally {
                     setButtonLoading(loginBtn, false, 'Login to Dashboard');
@@ -868,7 +868,7 @@
                     try {
                         await signOut(auth);
                         showNotification('👋 Logged out successfully', 'success');
-                        
+
                         // Clear input fields
                         emailInput.value = '';
                         passwordInput.value = '';
@@ -883,7 +883,7 @@
         // ============================================
         // ADD ITEM HANDLER
         // ============================================
-        
+
         /**
          * Handle adding new menu item
          */
@@ -916,32 +916,32 @@
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString()
                     });
-                    
+
                     // Clear form
                     clearForm();
-                    
+
                     // Show success message
                     showNotification('✅ Item added successfully!', 'success');
-                    
+
                     // Scroll to items section on mobile
                     if (window.innerWidth < 768) {
-                        document.querySelector('.items-section').scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start' 
+                        document.querySelector('.items-section').scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
                         });
                     }
                 } catch (error) {
                     console.error("Error adding item:", error);
-                    
+
                     // User-friendly error message
                     let errorMessage = 'Failed to add item. Please try again.';
-                    
+
                     if (error.code === 'permission-denied') {
                         errorMessage = 'Permission denied. Please check your access rights.';
                     } else if (error.code === 'unavailable') {
                         errorMessage = 'Service unavailable. Check your connection.';
                     }
-                    
+
                     showNotification(errorMessage, 'error');
                 } finally {
                     setButtonLoading(addItemBtn, false, 'Add Item to Menu');
@@ -961,7 +961,7 @@
         // ============================================
         // AUTHENTICATION STATE MANAGEMENT
         // ============================================
-        
+
         /**
          * Monitor authentication state changes
          * Shows/hides appropriate UI based on login status
@@ -971,19 +971,19 @@
                 // User is authenticated - show dashboard
                 loginBox.style.display = "none";
                 adminPanel.style.display = "block";
-                
+
                 // Load menu items
                 loadItems();
-                
+
                 console.log('✅ User authenticated:', user.email);
             } else {
                 // User is not authenticated - show login
                 loginBox.style.display = "block";
                 adminPanel.style.display = "none";
-                
+
                 // Clear any sensitive data
                 if (itemsDiv) itemsDiv.innerHTML = '';
-                
+
                 console.log('⚠️ User not authenticated');
             }
         });
@@ -991,20 +991,17 @@
         // ============================================
         // LOAD ITEMS FROM DATABASE
         // ============================================
-        
+
         /**
          * Load and display all menu items with real-time updates
          * Items are sorted by creation date (newest first)
          */
         function loadItems() {
-            // Create query to get items sorted by creation date
-            const itemsQuery = query(
-                collection(db, "menu_items"),
-                orderBy("createdAt", "desc")
-            );
+            // Create query to get items (removed orderBy to support legacy data)
+            const itemsQuery = collection(db, "menu_items");
 
             // Set up real-time listener
-            onSnapshot(itemsQuery, 
+            onSnapshot(itemsQuery,
                 (snapshot) => {
                     // Handle successful data fetch
                     if (snapshot.empty) {
@@ -1013,18 +1010,18 @@
                     } else {
                         // Render all items
                         itemsDiv.innerHTML = "";
-                        
+
                         snapshot.forEach((docSnap) => {
                             itemsDiv.innerHTML += renderItem(docSnap);
                         });
-                        
+
                         console.log(`📋 Loaded ${snapshot.size} menu items`);
                     }
                 },
                 (error) => {
                     // Handle errors
                     console.error('Error loading items:', error);
-                    
+
                     itemsDiv.innerHTML = `
                         <div class="empty-state">
                             <h3>⚠️ Error loading menu items</h3>
@@ -1043,7 +1040,7 @@
                             </button>
                         </div>
                     `;
-                    
+
                     showNotification('Failed to load items. Please refresh.', 'error');
                 }
             );
