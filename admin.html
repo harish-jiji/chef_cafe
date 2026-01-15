@@ -3,170 +3,390 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Chef Cafe – Admin</title>
+    <title>Chef Cafe – Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        body {
-            font-family: system-ui, sans-serif;
-            background: #f6f6f6;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
         }
 
         /* Login Box Styles */
         #loginBox {
-            max-width: 400px;
+            max-width: 420px;
             margin: 80px auto;
             background: #fff;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
-            text-align: center;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
         }
 
         #loginBox h2 {
-            margin-top: 0;
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        #loginBox p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
             margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
         }
 
         #loginBox input {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        #loginBox input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         #loginBox button {
             width: 100%;
-            padding: 12px;
-            background: #222;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        /* Admin Layout */
+        #loginBox button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        #loginBox button:active {
+            transform: translateY(0);
+        }
+
+        /* Admin Dashboard */
         .admin-wrapper {
-            max-width: 900px;
+            max-width: 1200px;
             margin: auto;
         }
 
         .admin-header {
+            background: #fff;
+            padding: 24px 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .15);
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            color: #1a1a1a;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .header-right button {
+            padding: 12px 24px;
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .header-right button:hover {
+            background: #fff;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        /* Add Item Card */
+        .add-item-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .15);
+            margin-bottom: 24px;
+        }
+
+        .add-item-card h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 16px;
             margin-bottom: 20px;
         }
 
-        .admin-header h1 {
-            margin: 0;
-            font-size: 24px;
+        .form-group {
+            display: flex;
+            flex-direction: column;
         }
 
-        .admin-header button {
-            padding: 8px 16px;
-            background: #222;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
+        .form-group label {
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
         }
 
-        .add-item-card {
-            background: #fff;
-            padding: 14px;
+        .form-group input,
+        .form-group select {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
-            margin-bottom: 16px;
+            font-size: 15px;
+            transition: all 0.3s ease;
         }
 
-        .add-item-card input,
-        .add-item-card select,
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
         .add-item-card button {
             width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-
-        .add-item-card button {
-            background: #111;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
             border: none;
-            font-weight: bold;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-item-card button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Items List */
+        .items-section h3 {
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 16px;
+            font-weight: 600;
         }
 
         .items-list {
             display: grid;
-            gap: 12px;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         }
 
         .menu-card {
             background: #fff;
-            padding: 14px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
+            transition: all 0.3s ease;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
         }
 
         .menu-card h3 {
-            margin: 0 0 6px;
             font-size: 18px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .menu-price {
+            font-size: 16px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
 
         .menu-meta {
-            font-size: 14px;
-            opacity: .7;
-            text-transform: capitalize;
+            display: inline-block;
+            font-size: 12px;
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
         }
 
         .card-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
         }
 
         .card-actions button {
-            flex: 1;
             padding: 10px;
             font-size: 14px;
-            border-radius: 8px;
+            border-radius: 10px;
             border: none;
             cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
         .edit-btn {
-            background: #e5e7eb;
-            color: #111;
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .edit-btn:hover {
+            background: #667eea;
+            color: #fff;
         }
 
         .delete-btn {
+            background: #fee;
+            color: #ef4444;
+        }
+
+        .delete-btn:hover {
             background: #ef4444;
             color: white;
         }
 
-        /* Desktop improvement */
+        /* Edit Mode */
+        .edit-mode input {
+            width: 100%;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .edit-mode input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .save-btn {
+            background: #667eea !important;
+            color: #fff !important;
+        }
+
+        .save-btn:hover {
+            background: #5568d3 !important;
+        }
+
+        .cancel-btn {
+            background: #e0e0e0 !important;
+            color: #333 !important;
+        }
+
+        .cancel-btn:hover {
+            background: #d0d0d0 !important;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
         @media (min-width: 768px) {
-            .add-item-card {
-                display: grid;
-                grid-template-columns: 2fr 1fr 1fr auto;
-                gap: 10px;
-                align-items: center;
+            .form-grid {
+                grid-template-columns: 2fr 1fr 1fr;
             }
 
-            .add-item-card input,
-            .add-item-card select,
             .add-item-card button {
-                margin-top: 0;
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 767px) {
+            body {
+                padding: 12px;
+            }
+
+            #loginBox {
+                margin: 40px auto;
+                padding: 30px 24px;
+            }
+
+            .admin-header {
+                padding: 20px;
+            }
+
+            .header-left h1 {
+                font-size: 24px;
+            }
+
+            .add-item-card {
+                padding: 20px;
+            }
+
+            .items-list {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -176,44 +396,78 @@
 
     <!-- LOGIN -->
     <div id="loginBox">
-        <h2>Admin Login</h2>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="password" placeholder="Password">
-        <button id="loginBtn">Login</button>
+        <h2>🍽️ Admin Login</h2>
+        <p>Welcome back! Please login to continue.</p>
+        
+        <div class="input-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="admin@chefscafe.com">
+        </div>
+        
+        <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password">
+        </div>
+        
+        <button id="loginBtn">Login to Dashboard</button>
     </div>
 
     <!-- DASHBOARD -->
     <div id="adminPanel" class="admin-wrapper" style="display:none">
 
         <header class="admin-header">
-            <h1>Menu Manager</h1>
-            <button id="logoutBtn">Logout</button>
+            <div class="header-left">
+                <h1>🍽️ Chef Cafe Dashboard</h1>
+                <p>Manage your menu items efficiently</p>
+            </div>
+            <div class="header-right">
+                <button id="logoutBtn">Logout</button>
+            </div>
         </header>
 
         <section class="add-item-card">
-            <input id="name" placeholder="Item name">
-            <input id="price" type="text" placeholder="Price (₹100 / As Per Size)">
-            <select id="category">
-                <option value="soup">Soup</option>
-                <option value="salads">Salads</option>
-                <option value="starter">Starter</option>
-                <option value="maincourses">Main Courses</option>
-                <option value="chefspecial">Chef Special</option>
-                <option value="asianmain">Asian Main Courses</option>
-                <option value="asiannonveg">Asian Non Veg</option>
-                <option value="asianveg">Asian Veg</option>
-                <option value="kerala">Kerala Style</option>
-                <option value="bread">Bread</option>
-                <option value="grill">Grill Items</option>
-                <option value="crispy">Crispy Bookzz</option>
-                <option value="beverages">Beverages</option>
-                <option value="cafespecials">Cafe Specials</option>
-            </select>
-            <button id="addItemBtn">Add</button>
+            <h3>➕ Add New Menu Item</h3>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="name">Item Name</label>
+                    <input id="name" placeholder="e.g., Chicken Biryani">
+                </div>
+                
+                <div class="form-group">
+                    <label for="price">Price</label>
+                    <input id="price" type="text" placeholder="₹100 / As Per Size">
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category">
+                        <option value="soup">Soup</option>
+                        <option value="salads">Salads</option>
+                        <option value="starter">Starter</option>
+                        <option value="maincourses">Main Courses</option>
+                        <option value="chefspecial">Chef Special</option>
+                        <option value="asianmain">Asian Main Courses</option>
+                        <option value="asiannonveg">Asian Non Veg</option>
+                        <option value="asianveg">Asian Veg</option>
+                        <option value="kerala">Kerala Style</option>
+                        <option value="bread">Bread</option>
+                        <option value="grill">Grill Items</option>
+                        <option value="crispy">Crispy Bookzz</option>
+                        <option value="beverages">Beverages</option>
+                        <option value="cafespecials">Cafe Specials</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button id="addItemBtn">Add Item to Menu</button>
         </section>
 
-        <section class="items-list" id="items">
-            <!-- Items rendered here -->
+        <section class="items-section">
+            <h3>📋 Menu Items</h3>
+            <div class="items-list" id="items">
+                <!-- Items rendered here -->
+            </div>
         </section>
 
     </div>
@@ -235,10 +489,14 @@
             updateDoc,
             deleteDoc,
             doc,
-            onSnapshot
+            onSnapshot,
+            query,
+            orderBy
         } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-        // Firebase config
+        // ============================================
+        // FIREBASE CONFIGURATION
+        // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyAON6aij8dNGoRlJ1DdLcwMkPZsAGe-SBQ",
             authDomain: "chef-s-cafe.firebaseapp.com",
@@ -248,11 +506,14 @@
             appId: "1:623426909086:web:b4c16775db67b1485b5c8f"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // DOM Elements
+        // ============================================
+        // DOM ELEMENT REFERENCES
+        // ============================================
         const loginBtn = document.getElementById("loginBtn");
         const logoutBtn = document.getElementById("logoutBtn");
         const addItemBtn = document.getElementById("addItemBtn");
@@ -260,15 +521,118 @@
         const loginBox = document.getElementById("loginBox");
         const itemsDiv = document.getElementById("items");
 
-        // GLOBAL FUNCTIONS (for inline onclicks)
+        // Input fields
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+        const nameInput = document.getElementById("name");
+        const priceInput = document.getElementById("price");
+        const categorySelect = document.getElementById("category");
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        
+        /**
+         * Show a user-friendly toast notification
+         */
+        function showNotification(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 10000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        /**
+         * Add CSS animations for notifications
+         */
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        /**
+         * Validate input fields
+         */
+        function validateInput(value, fieldName) {
+            if (!value || value.trim() === '') {
+                showNotification(`${fieldName} is required`, 'error');
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Clear form inputs
+         */
+        function clearForm() {
+            nameInput.value = '';
+            priceInput.value = '';
+            categorySelect.selectedIndex = 0;
+        }
+
+        /**
+         * Show loading state on button
+         */
+        function setButtonLoading(button, isLoading, originalText) {
+            if (isLoading) {
+                button.disabled = true;
+                button.dataset.originalText = originalText;
+                button.textContent = '⏳ Loading...';
+                button.style.opacity = '0.6';
+            } else {
+                button.disabled = false;
+                button.textContent = button.dataset.originalText || originalText;
+                button.style.opacity = '1';
+            }
+        }
+
+        // ============================================
+        // EDIT & DELETE FUNCTIONS (Global Scope)
+        // ============================================
+        
+        /**
+         * Enable edit mode for a menu item
+         */
         window.enableEdit = (id) => {
             const card = document.querySelector(`[data-id="${id}"]`);
             if (card) {
                 card.querySelector(".view-mode").style.display = "none";
                 card.querySelector(".edit-mode").style.display = "block";
+                
+                // Focus on the name input
+                const nameInput = card.querySelector(`#name-${id}`);
+                if (nameInput) nameInput.focus();
             }
         };
 
+        /**
+         * Cancel edit mode and revert to view mode
+         */
         window.cancelEdit = (id) => {
             const card = document.querySelector(`[data-id="${id}"]`);
             if (card) {
@@ -277,143 +641,418 @@
             }
         };
 
+        /**
+         * Save edited item to database
+         */
         window.saveEdit = async (id) => {
-            const newName = document.getElementById(`name-${id}`).value.trim();
-            const newPrice = document.getElementById(`price-${id}`).value.trim();
+            const nameField = document.getElementById(`name-${id}`);
+            const priceField = document.getElementById(`price-${id}`);
+            
+            const newName = nameField.value.trim();
+            const newPrice = priceField.value.trim();
 
-            if (!newName || !newPrice) {
-                alert("Name and price cannot be empty");
+            // Validate inputs
+            if (!newName) {
+                showNotification('Item name cannot be empty', 'error');
+                nameField.focus();
+                return;
+            }
+
+            if (!newPrice) {
+                showNotification('Price cannot be empty', 'error');
+                priceField.focus();
                 return;
             }
 
             try {
+                // Update in Firestore
                 await updateDoc(doc(db, "menu_items", id), {
                     name: newName,
-                    price: newPrice
+                    price: newPrice,
+                    updatedAt: new Date().toISOString()
                 });
-                // UI updates automatically via snapshot listener
+                
+                showNotification('✅ Item updated successfully!', 'success');
+                
+                // Return to view mode
+                window.cancelEdit(id);
             } catch (err) {
-                console.error(err);
-                alert("Update failed: " + err.message);
+                console.error('Update error:', err);
+                showNotification('Failed to update item: ' + err.message, 'error');
             }
         };
 
+        /**
+         * Delete item from database with confirmation
+         */
         window.deleteItem = async (id) => {
-            if (confirm("Delete this item?")) {
+            // Custom confirmation dialog
+            const confirmed = confirm("⚠️ Are you sure you want to delete this item?\n\nThis action cannot be undone.");
+            
+            if (confirmed) {
                 try {
                     await deleteDoc(doc(db, "menu_items", id));
+                    showNotification('🗑️ Item deleted successfully', 'success');
                 } catch (err) {
-                    console.error(err);
-                    alert("Delete failed: " + err.message);
+                    console.error('Delete error:', err);
+                    showNotification('Failed to delete item: ' + err.message, 'error');
                 }
             }
         };
 
-        // RENDER ITEM FUNCTION
+        // ============================================
+        // RENDER FUNCTIONS
+        // ============================================
+        
+        /**
+         * Format category name for display
+         */
+        function formatCategory(category) {
+            const categoryMap = {
+                'soup': 'Soup',
+                'salads': 'Salads',
+                'starter': 'Starter',
+                'maincourses': 'Main Courses',
+                'chefspecial': 'Chef Special',
+                'asianmain': 'Asian Main',
+                'asiannonveg': 'Asian Non-Veg',
+                'asianveg': 'Asian Veg',
+                'kerala': 'Kerala Style',
+                'bread': 'Bread',
+                'grill': 'Grill Items',
+                'crispy': 'Crispy Bookzz',
+                'beverages': 'Beverages',
+                'cafespecials': 'Cafe Specials'
+            };
+            return categoryMap[category] || category;
+        }
+
+        /**
+         * Render a single menu item card
+         */
         function renderItem(docSnap) {
             const item = docSnap.data();
             const id = docSnap.id;
 
+            // Escape HTML to prevent XSS
+            const escapedName = item.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const escapedPrice = item.price.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
             return `
         <div class="menu-card" data-id="${id}">
           <div class="view-mode">
-            <h3>${item.name} – ${item.price}</h3>
-            <div class="menu-meta">${item.category}</div>
+            <h3>${escapedName}</h3>
+            <div class="menu-price">${escapedPrice}</div>
+            <span class="menu-meta">${formatCategory(item.category)}</span>
 
             <div class="card-actions">
-              <button class="edit-btn" onclick="enableEdit('${id}')">Edit</button>
-              <button class="delete-btn" onclick="deleteItem('${id}')">Delete</button>
+              <button class="edit-btn" onclick="enableEdit('${id}')" title="Edit this item">
+                ✏️ Edit
+              </button>
+              <button class="delete-btn" onclick="deleteItem('${id}')" title="Delete this item">
+                🗑️ Delete
+              </button>
             </div>
           </div>
 
           <div class="edit-mode" style="display:none">
-            <input type="text" id="name-${id}" value="${item.name}" style="margin-bottom:5px">
-            <input type="text" id="price-${id}" value="${item.price}" style="margin-bottom:5px">
+            <input 
+              type="text" 
+              id="name-${id}" 
+              value="${escapedName}" 
+              placeholder="Item name"
+              aria-label="Item name"
+            >
+            <input 
+              type="text" 
+              id="price-${id}" 
+              value="${escapedPrice}" 
+              placeholder="Price"
+              aria-label="Price"
+            >
 
             <div class="card-actions">
-              <button onclick="saveEdit('${id}')" style="background:#222; color:#fff">Save</button>
-              <button onclick="cancelEdit('${id}')" style="background:#ccc; color:#000">Cancel</button>
+              <button class="save-btn" onclick="saveEdit('${id}')" title="Save changes">
+                💾 Save
+              </button>
+              <button class="cancel-btn" onclick="cancelEdit('${id}')" title="Cancel editing">
+                ✖️ Cancel
+              </button>
             </div>
           </div>
         </div>
       `;
         }
 
-        // LOGIN
+        /**
+         * Render empty state when no items exist
+         */
+        function renderEmptyState() {
+            return `
+                <div class="empty-state">
+                    <h3>📋 No menu items yet</h3>
+                    <p>Add your first item using the form above to get started</p>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // AUTHENTICATION HANDLERS
+        // ============================================
+        
+        /**
+         * Handle user login
+         */
         if (loginBtn) {
             loginBtn.addEventListener("click", async () => {
-                const email = document.getElementById("email").value;
-                const password = document.getElementById("password").value;
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
 
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    alert("Login successful");
-                } catch (err) {
-                    alert("Login failed: " + err.message);
-                }
-            });
-        }
+                // Validate inputs
+                if (!validateInput(email, 'Email')) return;
+                if (!validateInput(password, 'Password')) return;
 
-        // LOGOUT
-        if (logoutBtn) {
-            logoutBtn.addEventListener("click", async () => {
-                try {
-                    await signOut(auth);
-                } catch (err) {
-                    console.error("Logout error", err);
-                }
-            });
-        }
-
-        // ADD ITEM
-        if (addItemBtn) {
-            addItemBtn.addEventListener("click", async () => {
-                const name = document.getElementById("name").value.trim();
-                const price = document.getElementById("price").value.trim(); // Now a string
-                const category = document.getElementById("category").value;
-
-                if (!name || !price) {
-                    alert("Please fill all fields");
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showNotification('Please enter a valid email address', 'error');
                     return;
                 }
 
+                // Show loading state
+                setButtonLoading(loginBtn, true, 'Login to Dashboard');
+
                 try {
-                    await addDoc(collection(db, "menu_items"), {
-                        name,
-                        price,
-                        category
-                    });
-                    document.getElementById("name").value = "";
-                    document.getElementById("price").value = "";
-                    alert("Item added successfully!");
-                } catch (error) {
-                    console.error("Error adding document: ", error);
-                    alert("Error adding item: " + error.message);
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showNotification('✅ Login successful! Welcome back.', 'success');
+                } catch (err) {
+                    console.error('Login error:', err);
+                    
+                    // User-friendly error messages
+                    let errorMessage = 'Login failed. Please try again.';
+                    
+                    if (err.code === 'auth/invalid-credential') {
+                        errorMessage = 'Invalid email or password';
+                    } else if (err.code === 'auth/user-not-found') {
+                        errorMessage = 'No account found with this email';
+                    } else if (err.code === 'auth/wrong-password') {
+                        errorMessage = 'Incorrect password';
+                    } else if (err.code === 'auth/too-many-requests') {
+                        errorMessage = 'Too many failed attempts. Please try again later';
+                    } else if (err.code === 'auth/network-request-failed') {
+                        errorMessage = 'Network error. Check your connection';
+                    }
+                    
+                    showNotification(errorMessage, 'error');
+                } finally {
+                    setButtonLoading(loginBtn, false, 'Login to Dashboard');
+                }
+            });
+
+            // Allow Enter key to submit login
+            [emailInput, passwordInput].forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        loginBtn.click();
+                    }
+                });
+            });
+        }
+
+        /**
+         * Handle user logout
+         */
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", async () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    try {
+                        await signOut(auth);
+                        showNotification('👋 Logged out successfully', 'success');
+                        
+                        // Clear input fields
+                        emailInput.value = '';
+                        passwordInput.value = '';
+                    } catch (err) {
+                        console.error("Logout error:", err);
+                        showNotification('Logout failed. Please try again.', 'error');
+                    }
                 }
             });
         }
 
-        // AUTH & DATA LISTENER
-        onAuthStateChanged(auth, user => {
-            if (user && user.email === "owner@chefscafe.com") {
-                loginBox.style.display = "none";
-                adminPanel.style.display = "block";
-                loadItems();
-            } else {
-                loginBox.style.display = "block";
-                adminPanel.style.display = "none";
-            }
-        });
+        // ============================================
+        // ADD ITEM HANDLER
+        // ============================================
+        
+        /**
+         * Handle adding new menu item
+         */
+        if (addItemBtn) {
+            addItemBtn.addEventListener("click", async () => {
+                const name = nameInput.value.trim();
+                const price = priceInput.value.trim();
+                const category = categorySelect.value;
 
-        // LOAD ITEMS
-        function loadItems() {
-            onSnapshot(collection(db, "menu_items"), (snapshot) => {
-                itemsDiv.innerHTML = "";
-                snapshot.forEach((docSnap) => {
-                    itemsDiv.innerHTML += renderItem(docSnap);
+                // Validate inputs
+                if (!validateInput(name, 'Item name')) {
+                    nameInput.focus();
+                    return;
+                }
+
+                if (!validateInput(price, 'Price')) {
+                    priceInput.focus();
+                    return;
+                }
+
+                // Show loading state
+                setButtonLoading(addItemBtn, true, 'Add Item to Menu');
+
+                try {
+                    // Add item to Firestore with timestamp
+                    await addDoc(collection(db, "menu_items"), {
+                        name,
+                        price,
+                        category,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    });
+                    
+                    // Clear form
+                    clearForm();
+                    
+                    // Show success message
+                    showNotification('✅ Item added successfully!', 'success');
+                    
+                    // Scroll to items section on mobile
+                    if (window.innerWidth < 768) {
+                        document.querySelector('.items-section').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error adding item:", error);
+                    
+                    // User-friendly error message
+                    let errorMessage = 'Failed to add item. Please try again.';
+                    
+                    if (error.code === 'permission-denied') {
+                        errorMessage = 'Permission denied. Please check your access rights.';
+                    } else if (error.code === 'unavailable') {
+                        errorMessage = 'Service unavailable. Check your connection.';
+                    }
+                    
+                    showNotification(errorMessage, 'error');
+                } finally {
+                    setButtonLoading(addItemBtn, false, 'Add Item to Menu');
+                }
+            });
+
+            // Allow Enter key in name and price fields to add item
+            [nameInput, priceInput].forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        addItemBtn.click();
+                    }
                 });
             });
         }
+
+        // ============================================
+        // AUTHENTICATION STATE MANAGEMENT
+        // ============================================
+        
+        /**
+         * Monitor authentication state changes
+         * Shows/hides appropriate UI based on login status
+         */
+        onAuthStateChanged(auth, user => {
+            if (user && user.email === "owner@chefscafe.com") {
+                // User is authenticated - show dashboard
+                loginBox.style.display = "none";
+                adminPanel.style.display = "block";
+                
+                // Load menu items
+                loadItems();
+                
+                console.log('✅ User authenticated:', user.email);
+            } else {
+                // User is not authenticated - show login
+                loginBox.style.display = "block";
+                adminPanel.style.display = "none";
+                
+                // Clear any sensitive data
+                if (itemsDiv) itemsDiv.innerHTML = '';
+                
+                console.log('⚠️ User not authenticated');
+            }
+        });
+
+        // ============================================
+        // LOAD ITEMS FROM DATABASE
+        // ============================================
+        
+        /**
+         * Load and display all menu items with real-time updates
+         * Items are sorted by creation date (newest first)
+         */
+        function loadItems() {
+            // Create query to get items sorted by creation date
+            const itemsQuery = query(
+                collection(db, "menu_items"),
+                orderBy("createdAt", "desc")
+            );
+
+            // Set up real-time listener
+            onSnapshot(itemsQuery, 
+                (snapshot) => {
+                    // Handle successful data fetch
+                    if (snapshot.empty) {
+                        // No items - show empty state
+                        itemsDiv.innerHTML = renderEmptyState();
+                    } else {
+                        // Render all items
+                        itemsDiv.innerHTML = "";
+                        
+                        snapshot.forEach((docSnap) => {
+                            itemsDiv.innerHTML += renderItem(docSnap);
+                        });
+                        
+                        console.log(`📋 Loaded ${snapshot.size} menu items`);
+                    }
+                },
+                (error) => {
+                    // Handle errors
+                    console.error('Error loading items:', error);
+                    
+                    itemsDiv.innerHTML = `
+                        <div class="empty-state">
+                            <h3>⚠️ Error loading menu items</h3>
+                            <p>${error.message}</p>
+                            <button onclick="location.reload()" style="
+                                margin-top: 16px;
+                                padding: 12px 24px;
+                                background: #667eea;
+                                color: white;
+                                border: none;
+                                border-radius: 12px;
+                                cursor: pointer;
+                                font-weight: 600;
+                            ">
+                                🔄 Reload Page
+                            </button>
+                        </div>
+                    `;
+                    
+                    showNotification('Failed to load items. Please refresh.', 'error');
+                }
+            );
+        }
+
+        // ============================================
+        // INITIALIZATION COMPLETE
+        // ============================================
+        console.log('🚀 Chef Cafe Admin Dashboard initialized');
     </script>
 </body>
 
