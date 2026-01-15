@@ -389,6 +389,47 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Category Grouping Styles */
+        .category-block {
+            margin-bottom: 50px;
+        }
+
+        .category-heading {
+            text-align: center;
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 40px 0 25px;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        /* Optional underline divider */
+        .category-heading::after {
+            content: "";
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            margin: 12px auto 0;
+            border-radius: 4px;
+        }
+
+        .category-items {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        .empty-category {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 18px;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 15px;
+        }
     </style>
 </head>
 
@@ -406,7 +447,21 @@
 
         <div class="input-group">
             <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Enter your password">
+            <div style="position:relative">
+                <input type="password" id="password" placeholder="Enter your password">
+                <span id="togglePassword" style="
+                  position:absolute;
+                  right:14px;
+                  top:50%;
+                  transform:translateY(-50%);
+                  cursor:pointer;
+                  font-size:14px;
+                  color:#667eea;
+                  user-select:none;
+                ">
+                    👁 Show
+                </span>
+            </div>
         </div>
 
         <button id="loginBtn">Login to Dashboard</button>
@@ -525,6 +580,21 @@
         const nameInput = document.getElementById("name");
         const priceInput = document.getElementById("price");
         const categorySelect = document.getElementById("category");
+
+        // Toggle Password Logic
+        const togglePassword = document.getElementById("togglePassword");
+
+        if (togglePassword) {
+            togglePassword.addEventListener("click", () => {
+                if (passwordInput.type === "password") {
+                    passwordInput.type = "text";
+                    togglePassword.textContent = "🙈 Hide";
+                } else {
+                    passwordInput.type = "password";
+                    togglePassword.textContent = "👁 Show";
+                }
+            });
+        }
 
         // ============================================
         // UTILITY FUNCTIONS
@@ -724,6 +794,23 @@
             };
             return categoryMap[category] || category;
         }
+
+        const CATEGORY_ORDER = [
+            "soup",
+            "salads",
+            "starter",
+            "maincourses",
+            "chefspecial",
+            "asianmain",
+            "asiannonveg",
+            "asianveg",
+            "kerala",
+            "bread",
+            "grill",
+            "crispy",
+            "beverages",
+            "cafespecials"
+        ];
 
         /**
          * Render a single menu item card
@@ -995,53 +1082,47 @@
          * Items are sorted by creation date (newest first)
          */
         function loadItems() {
-            // Create query to get items (removed orderBy to support legacy data)
             const itemsRef = collection(db, "menu_items");
 
-            // Set up real-time listener
-            onSnapshot(itemsRef,
-                (snapshot) => {
-                    // Handle successful data fetch
-                    if (snapshot.empty) {
-                        // No items - show empty state
-                        itemsDiv.innerHTML = renderEmptyState();
-                    } else {
-                        // Render all items
-                        itemsDiv.innerHTML = "";
+            onSnapshot(itemsRef, (snapshot) => {
 
-                        snapshot.forEach((docSnap) => {
-                            itemsDiv.innerHTML += renderItem(docSnap);
-                        });
+                // 1️⃣ Create empty category buckets
+                const grouped = {};
+                CATEGORY_ORDER.forEach(cat => grouped[cat] = []);
 
-                        console.log(`📋 Loaded ${snapshot.size} menu items`);
-                    }
-                },
-                (error) => {
-                    // Handle errors
-                    console.error('Error loading items:', error);
+                // 2️⃣ Push items into their category
+                snapshot.forEach(docSnap => {
+                    const item = docSnap.data();
+                    const category = item.category || "others";
+                    if (!grouped[category]) grouped[category] = [];
+                    grouped[category].push(docSnap);
+                });
 
-                    itemsDiv.innerHTML = `
-                        <div class="empty-state">
-                            <h3>⚠️ Error loading menu items</h3>
-                            <p>${error.message}</p>
-                            <button onclick="location.reload()" style="
-                                margin-top: 16px;
-                                padding: 12px 24px;
-                                background: #667eea;
-                                color: white;
-                                border: none;
-                                border-radius: 12px;
-                                cursor: pointer;
-                                font-weight: 600;
-                            ">
-                                🔄 Reload Page
-                            </button>
-                        </div>
-                    `;
+                // 3️⃣ Render category sections
+                itemsDiv.innerHTML = "";
 
-                    showNotification('Failed to load items. Please refresh.', 'error');
-                }
-            );
+                CATEGORY_ORDER.forEach(category => {
+                    const items = grouped[category];
+
+                    itemsDiv.innerHTML += `
+              <div class="category-block">
+                <h4 class="category-heading">${formatCategory(category)}</h4>
+                <div class="category-items">
+                  ${items.length
+                            ? items.map(renderItem).join("")
+                            : `<p class="empty-category">No items in this category</p>`
+                        }
+                </div>
+              </div>
+            `;
+                });
+
+                console.log("📦 Categories rendered");
+
+            }, error => {
+                console.error(error);
+                showNotification(error.message, "error");
+            });
         }
 
         // ============================================
