@@ -26,7 +26,7 @@ if (themeToggle) {
     themeToggle.addEventListener('click', () => {
         const currentTheme = body.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
+
         body.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         updateThemeIcon(newTheme);
@@ -100,7 +100,7 @@ categoryBtns.forEach(btn => {
         categoryBtns.forEach(b => b.classList.remove('active'));
         // Add active class to clicked button
         btn.classList.add('active');
-        
+
         const category = btn.getAttribute('data-category');
         filterMenuBy(category);
         if (categorySelect) categorySelect.value = category;
@@ -204,17 +204,55 @@ images.forEach(img => {
 });
 
 // Search functionality for menu (if needed in future)
+// Search functionality
+const searchInput = document.getElementById('searchInput');
+
 function searchMenu(query) {
-    const menuItems = document.querySelectorAll('.menu-item');
-    const searchTerm = query.toLowerCase();
-    
-    menuItems.forEach(item => {
-        const itemText = item.textContent.toLowerCase();
-        if (itemText.includes(searchTerm)) {
-            item.style.display = 'flex';
+    const menuSections = document.querySelectorAll('.menu-section');
+    const searchTerm = query.toLowerCase().trim();
+
+    menuSections.forEach(section => {
+        const items = section.querySelectorAll('.menu-item');
+        let hasVisibleItems = false;
+
+        items.forEach(item => {
+            const titleElement = item.querySelector('h3');
+            const itemText = titleElement ? titleElement.textContent.toLowerCase() : '';
+
+            // Also search in description if available
+            const descElement = item.querySelector('.menu-desc');
+            const descText = descElement ? descElement.textContent.toLowerCase() : '';
+
+            if (itemText.includes(searchTerm) || descText.includes(searchTerm)) {
+                item.style.display = 'flex';
+                hasVisibleItems = true;
+                // Add animation for appearance
+                if (searchTerm !== '') {
+                    item.style.animation = 'fadeInUp 0.3s ease';
+                }
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // Hide section if no items match
+        if (hasVisibleItems) {
+            section.classList.remove('hidden');
         } else {
-            item.style.display = 'none';
+            section.classList.add('hidden');
         }
+    });
+
+    // Reset category filter to 'all' when searching to avoid confusion
+    if (searchTerm !== '' && categorySelect) {
+        // Optional: you might want to reset the visual state of buttons too
+        // But for now, let's just let the search override visibility
+    }
+}
+
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        searchMenu(e.target.value);
     });
 }
 
@@ -242,9 +280,9 @@ function showNotification(message) {
         z-index: 10000;
         animation: slideInRight 0.3s ease;
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => {
@@ -285,17 +323,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize theme on every page load
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
-    
+
     // Update theme toggle icon if it exists on this page
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
         updateThemeIcon(savedTheme);
     }
-    
+
     // Set active navigation based on current page
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const navLinks = document.querySelectorAll('.nav-link');
-    
+
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
         if (href === currentPage || (currentPage === '' && href === 'index.html')) {
@@ -304,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
             link.classList.remove('active');
         }
     });
-    
+
     // Initialize menu category filtering
     if (menuSections.length > 0) {
         // Show all sections by default
@@ -343,32 +381,32 @@ if ('IntersectionObserver' in window) {
 function initHeroSlideshow(container) {
     // Detect mobile device for optimized media
     const isMobile = window.innerWidth <= 768;
-    
+
     // Update these paths to your actual media files if needed
     const playlist = [
-        { 
-            type: 'image', 
-            src: isMobile ? 'images/hero/int.jpg' : 'images/hero/int.jpg', 
-            duration: 4000 
+        {
+            type: 'image',
+            src: isMobile ? 'images/hero/int.jpg' : 'images/hero/int.jpg',
+            duration: 4000
         },
-        { 
-            type: 'video', 
-            src: isMobile ? 
-                'images/hero/intro.mp4' : 
-                'images/hero/intro.mp4', 
-            duration: null 
+        {
+            type: 'video',
+            src: isMobile ?
+                'images/hero/intro.mp4' :
+                'images/hero/intro.mp4',
+            duration: null
         },
-        { 
-            type: 'image', 
-            src: isMobile ? 'images/hero/outin.jpg' : 'images/hero/outin.jpg', 
-            duration: 4000 
+        {
+            type: 'image',
+            src: isMobile ? 'images/hero/outin.jpg' : 'images/hero/outin.jpg',
+            duration: 4000
         },
-        { 
-            type: 'video', 
-            src: isMobile ? 
-                'https://cdn.coverr.co/videos/coverr-preparing-food-in-the-kitchen-1783/720p.mp4' : 
-                'https://cdn.coverr.co/videos/coverr-preparing-food-in-the-kitchen-1783/1080p.mp4', 
-            duration: null 
+        {
+            type: 'video',
+            src: isMobile ?
+                'https://cdn.coverr.co/videos/coverr-preparing-food-in-the-kitchen-1783/720p.mp4' :
+                'https://cdn.coverr.co/videos/coverr-preparing-food-in-the-kitchen-1783/1080p.mp4',
+            duration: null
         }
     ];
 
@@ -465,7 +503,7 @@ function initHeroSlideshow(container) {
     container.addEventListener('touchmove', (e) => {
         const deltaX = Math.abs(e.touches[0].clientX - startX);
         const deltaY = Math.abs(e.touches[0].clientY - startY);
-        
+
         // Determine if this is a horizontal swipe gesture
         if (deltaX > deltaY && deltaX > 10) {
             isSwipeGesture = true;
@@ -475,18 +513,18 @@ function initHeroSlideshow(container) {
 
     container.addEventListener('touchend', (e) => {
         if (!isSwipeGesture) return;
-        
+
         endX = e.changedTouches[0].clientX;
         endY = e.changedTouches[0].clientY;
-        
+
         const deltaX = endX - startX;
         const deltaY = endY - startY;
         const touchDuration = Date.now() - touchStartTime;
-        
+
         // Only trigger swipe if horizontal movement is significant
         // and swipe is quick enough
-        if (Math.abs(deltaX) > Math.abs(deltaY) && 
-            Math.abs(deltaX) > minSwipeDistance && 
+        if (Math.abs(deltaX) > Math.abs(deltaY) &&
+            Math.abs(deltaX) > minSwipeDistance &&
             touchDuration < maxSwipeTime) {
             pauseAutoplay();
             if (deltaX > 0) {
@@ -505,7 +543,7 @@ function initHeroSlideshow(container) {
                     e.el.currentTime = 0;
                     const playPromise = e.el.play();
                     if (playPromise && typeof playPromise.catch === 'function') {
-                        playPromise.catch(() => {});
+                        playPromise.catch(() => { });
                     }
                 } else {
                     e.el.pause();
@@ -604,7 +642,7 @@ function initHeroSlideshow(container) {
             }
         `;
         document.head.appendChild(style);
-        
+
         // Optimize video loading for mobile
         elements.forEach(({ item, el }) => {
             if (item.type === 'video') {
