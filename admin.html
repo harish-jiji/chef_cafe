@@ -8,48 +8,166 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
+            font-family: system-ui, sans-serif;
+            background: #f6f6f6;
             margin: 0;
             padding: 20px;
         }
 
-        .card {
+        /* Login Box Styles */
+        #loginBox {
             max-width: 400px;
-            margin: auto;
+            margin: 80px auto;
             background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+            text-align: center;
         }
 
-        input,
-        select,
-        button {
+        #loginBox h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        #loginBox input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        #loginBox button {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Admin Layout */
+        .admin-wrapper {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .admin-header button {
+            padding: 8px 16px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .add-item-card {
+            background: #fff;
+            padding: 14px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+            margin-bottom: 16px;
+        }
+
+        .add-item-card input,
+        .add-item-card select,
+        .add-item-card button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .add-item-card button {
+            background: #111;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .items-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .menu-card {
+            background: #fff;
+            padding: 14px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .06);
+        }
+
+        .menu-card h3 {
+            margin: 0 0 6px;
+            font-size: 18px;
+        }
+
+        .menu-meta {
+            font-size: 14px;
+            opacity: .7;
+            text-transform: capitalize;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
             margin-top: 10px;
         }
 
-        button {
-            background: #222;
-            color: #fff;
+        .card-actions button {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 8px;
             border: none;
             cursor: pointer;
         }
 
-        .hidden {
-            display: none;
+        .edit-btn {
+            background: #e5e7eb;
+            color: #111;
         }
 
-        .item {
-            border-bottom: 1px solid #ddd;
-            padding: 10px 0;
+        .delete-btn {
+            background: #ef4444;
+            color: white;
         }
 
-        .item button {
-            margin-top: 5px;
-            background: crimson;
+        /* Desktop improvement */
+        @media (min-width: 768px) {
+            .add-item-card {
+                display: grid;
+                grid-template-columns: 2fr 1fr 1fr auto;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .add-item-card input,
+            .add-item-card select,
+            .add-item-card button {
+                margin-top: 0;
+            }
         }
     </style>
 </head>
@@ -57,7 +175,7 @@
 <body>
 
     <!-- LOGIN -->
-    <div class="card" id="loginBox">
+    <div id="loginBox">
         <h2>Admin Login</h2>
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
@@ -65,26 +183,39 @@
     </div>
 
     <!-- DASHBOARD -->
-    <div class="card" id="adminPanel" style="display:none">
-        <h2>Menu Manager</h2>
+    <div id="adminPanel" class="admin-wrapper" style="display:none">
 
-        <input id="name" placeholder="Item name">
-        <input id="price" type="number" placeholder="Price">
-        <select id="category">
-            <option value="soup">Soup</option>
-            <option value="starter">Starter</option>
-            <option value="maincourses">Main Courses</option>
-            <option value="chefspecial">Chef Special</option>
-            <option value="beverages">Beverages</option>
-            <option value="cafespecials">Cafe Specials</option>
-        </select>
+        <header class="admin-header">
+            <h1>Menu Manager</h1>
+            <button id="logoutBtn">Logout</button>
+        </header>
 
-        <button id="addItemBtn">Add Item</button>
+        <section class="add-item-card">
+            <input id="name" placeholder="Item name">
+            <input id="price" type="number" placeholder="Price">
+            <select id="category">
+                <option value="soup">Soup</option>
+                <option value="salads">Salads</option>
+                <option value="starter">Starter</option>
+                <option value="maincourses">Main Courses</option>
+                <option value="chefspecial">Chef Special</option>
+                <option value="asianmain">Asian Main Courses</option>
+                <option value="asiannonveg">Asian Non Veg</option>
+                <option value="asianveg">Asian Veg</option>
+                <option value="kerala">Kerala Style</option>
+                <option value="bread">Bread</option>
+                <option value="grill">Grill Items</option>
+                <option value="crispy">Crispy Bookzz</option>
+                <option value="beverages">Beverages</option>
+                <option value="cafespecials">Cafe Specials</option>
+            </select>
+            <button id="addItemBtn">Add</button>
+        </section>
 
-        <h3>Existing Items</h3>
-        <div id="items"></div>
+        <section class="items-list" id="items">
+            <!-- Items rendered here -->
+        </section>
 
-        <button id="logoutBtn">Logout</button>
     </div>
 
     <!-- Firebase v12 Module -->
@@ -149,7 +280,6 @@
             logoutBtn.addEventListener("click", async () => {
                 try {
                     await signOut(auth);
-                    alert("Logged out");
                 } catch (err) {
                     console.error("Logout error", err);
                 }
@@ -176,7 +306,7 @@
                     });
                     document.getElementById("name").value = "";
                     document.getElementById("price").value = "";
-                    alert("Item added!");
+                    alert("Item added successfully!");
                 } catch (error) {
                     console.error("Error adding document: ", error);
                     alert("Error adding item: " + error.message);
@@ -203,11 +333,15 @@
                 snapshot.forEach((docSnap) => {
                     const item = docSnap.data();
                     const div = document.createElement("div");
-                    div.className = "item";
+                    div.className = "menu-card";
                     div.innerHTML = `
-                        <strong>${item.name}</strong> – ₹${item.price}
-                        <br><small>${item.category}</small>
-                        <button class="delete-btn" data-id="${docSnap.id}">Delete</button>
+                        <h3>${item.name} – ₹${item.price}</h3>
+                        <div class="menu-meta">${item.category}</div>
+                        
+                        <div class="card-actions">
+                            <button class="edit-btn" onclick="alert('Edit feature coming soon!')">Edit</button>
+                            <button class="delete-btn" data-id="${docSnap.id}">Delete</button>
+                        </div>
                     `;
                     itemsDiv.appendChild(div);
                 });
