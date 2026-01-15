@@ -489,9 +489,7 @@
             updateDoc,
             deleteDoc,
             doc,
-            onSnapshot,
-            query,
-            orderBy
+            onSnapshot
         } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
         // ============================================
@@ -998,10 +996,10 @@
          */
         function loadItems() {
             // Create query to get items (removed orderBy to support legacy data)
-            const itemsQuery = collection(db, "menu_items");
+            const itemsRef = collection(db, "menu_items");
 
             // Set up real-time listener
-            onSnapshot(itemsQuery,
+            onSnapshot(itemsRef,
                 (snapshot) => {
                     // Handle successful data fetch
                     if (snapshot.empty) {
