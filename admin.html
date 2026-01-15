@@ -192,7 +192,7 @@
 
         <section class="add-item-card">
             <input id="name" placeholder="Item name">
-            <input id="price" type="number" placeholder="Price">
+            <input id="price" type="text" placeholder="Price (₹100 / As Per Size)">
             <select id="category">
                 <option value="soup">Soup</option>
                 <option value="salads">Salads</option>
@@ -260,6 +260,85 @@
         const loginBox = document.getElementById("loginBox");
         const itemsDiv = document.getElementById("items");
 
+        // GLOBAL FUNCTIONS (for inline onclicks)
+        window.enableEdit = (id) => {
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (card) {
+                card.querySelector(".view-mode").style.display = "none";
+                card.querySelector(".edit-mode").style.display = "block";
+            }
+        };
+
+        window.cancelEdit = (id) => {
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (card) {
+                card.querySelector(".edit-mode").style.display = "none";
+                card.querySelector(".view-mode").style.display = "block";
+            }
+        };
+
+        window.saveEdit = async (id) => {
+            const newName = document.getElementById(`name-${id}`).value.trim();
+            const newPrice = document.getElementById(`price-${id}`).value.trim();
+
+            if (!newName || !newPrice) {
+                alert("Name and price cannot be empty");
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, "menu_items", id), {
+                    name: newName,
+                    price: newPrice
+                });
+                // UI updates automatically via snapshot listener
+            } catch (err) {
+                console.error(err);
+                alert("Update failed: " + err.message);
+            }
+        };
+
+        window.deleteItem = async (id) => {
+            if (confirm("Delete this item?")) {
+                try {
+                    await deleteDoc(doc(db, "menu_items", id));
+                } catch (err) {
+                    console.error(err);
+                    alert("Delete failed: " + err.message);
+                }
+            }
+        };
+
+        // RENDER ITEM FUNCTION
+        function renderItem(docSnap) {
+            const item = docSnap.data();
+            const id = docSnap.id;
+
+            return `
+        <div class="menu-card" data-id="${id}">
+          <div class="view-mode">
+            <h3>${item.name} – ${item.price}</h3>
+            <div class="menu-meta">${item.category}</div>
+
+            <div class="card-actions">
+              <button class="edit-btn" onclick="enableEdit('${id}')">Edit</button>
+              <button class="delete-btn" onclick="deleteItem('${id}')">Delete</button>
+            </div>
+          </div>
+
+          <div class="edit-mode" style="display:none">
+            <input type="text" id="name-${id}" value="${item.name}" style="margin-bottom:5px">
+            <input type="text" id="price-${id}" value="${item.price}" style="margin-bottom:5px">
+
+            <div class="card-actions">
+              <button onclick="saveEdit('${id}')" style="background:#222; color:#fff">Save</button>
+              <button onclick="cancelEdit('${id}')" style="background:#ccc; color:#000">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+        }
+
         // LOGIN
         if (loginBtn) {
             loginBtn.addEventListener("click", async () => {
@@ -289,8 +368,8 @@
         // ADD ITEM
         if (addItemBtn) {
             addItemBtn.addEventListener("click", async () => {
-                const name = document.getElementById("name").value;
-                const price = Number(document.getElementById("price").value);
+                const name = document.getElementById("name").value.trim();
+                const price = document.getElementById("price").value.trim(); // Now a string
                 const category = document.getElementById("category").value;
 
                 if (!name || !price) {
@@ -331,29 +410,7 @@
             onSnapshot(collection(db, "menu_items"), (snapshot) => {
                 itemsDiv.innerHTML = "";
                 snapshot.forEach((docSnap) => {
-                    const item = docSnap.data();
-                    const div = document.createElement("div");
-                    div.className = "menu-card";
-                    div.innerHTML = `
-                        <h3>${item.name} – ₹${item.price}</h3>
-                        <div class="menu-meta">${item.category}</div>
-                        
-                        <div class="card-actions">
-                            <button class="edit-btn" onclick="alert('Edit feature coming soon!')">Edit</button>
-                            <button class="delete-btn" data-id="${docSnap.id}">Delete</button>
-                        </div>
-                    `;
-                    itemsDiv.appendChild(div);
-                });
-
-                // Attach remove handlers
-                document.querySelectorAll(".delete-btn").forEach(btn => {
-                    btn.addEventListener("click", async (e) => {
-                        const id = e.target.getAttribute("data-id");
-                        if (confirm("Delete this item?")) {
-                            await deleteDoc(doc(db, "menu_items", id));
-                        }
-                    });
+                    itemsDiv.innerHTML += renderItem(docSnap);
                 });
             });
         }
