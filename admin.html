@@ -61,11 +61,11 @@
         <h2>Admin Login</h2>
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
+        <button id="loginBtn">Login</button>
     </div>
 
     <!-- DASHBOARD -->
-    <div class="card hidden" id="dashboard">
+    <div class="card" id="adminPanel" style="display:none">
         <h2>Menu Manager</h2>
 
         <input id="name" placeholder="Item name">
@@ -79,26 +79,35 @@
             <option value="cafespecials">Cafe Specials</option>
         </select>
 
-        <button onclick="addItem()">Add Item</button>
+        <button id="addItemBtn">Add Item</button>
 
         <h3>Existing Items</h3>
         <div id="items"></div>
 
-        <button onclick="logout()">Logout</button>
+        <button id="logoutBtn">Logout</button>
     </div>
 
-    <!-- Firebase v8 -->
+    <!-- Firebase v12 Module -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
         import {
             getAuth,
             signInWithEmailAndPassword,
+            signOut,
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
         import {
-            getFirestore
+            getFirestore,
+            collection,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            doc,
+            onSnapshot
         } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
+        // Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyAON6aij8dNGoRlJ1DdLcwMkPZsAGe-SBQ",
             authDomain: "chef-s-cafe.firebaseapp.com",
@@ -112,8 +121,108 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // TEMP TEST (remove later)
-        console.log("Firebase initialized", app);
+        // DOM Elements
+        const loginBtn = document.getElementById("loginBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const addItemBtn = document.getElementById("addItemBtn");
+        const adminPanel = document.getElementById("adminPanel");
+        const loginBox = document.getElementById("loginBox");
+        const itemsDiv = document.getElementById("items");
+
+        // LOGIN
+        if (loginBtn) {
+            loginBtn.addEventListener("click", async () => {
+                const email = document.getElementById("email").value;
+                const password = document.getElementById("password").value;
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    alert("Login successful");
+                } catch (err) {
+                    alert("Login failed: " + err.message);
+                }
+            });
+        }
+
+        // LOGOUT
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", async () => {
+                try {
+                    await signOut(auth);
+                    alert("Logged out");
+                } catch (err) {
+                    console.error("Logout error", err);
+                }
+            });
+        }
+
+        // ADD ITEM
+        if (addItemBtn) {
+            addItemBtn.addEventListener("click", async () => {
+                const name = document.getElementById("name").value;
+                const price = Number(document.getElementById("price").value);
+                const category = document.getElementById("category").value;
+
+                if (!name || !price) {
+                    alert("Please fill all fields");
+                    return;
+                }
+
+                try {
+                    await addDoc(collection(db, "menu_items"), {
+                        name,
+                        price,
+                        category
+                    });
+                    document.getElementById("name").value = "";
+                    document.getElementById("price").value = "";
+                    alert("Item added!");
+                } catch (error) {
+                    console.error("Error adding document: ", error);
+                    alert("Error adding item: " + error.message);
+                }
+            });
+        }
+
+        // AUTH & DATA LISTENER
+        onAuthStateChanged(auth, user => {
+            if (user && user.email === "owner@chefscafe.com") {
+                loginBox.style.display = "none";
+                adminPanel.style.display = "block";
+                loadItems();
+            } else {
+                loginBox.style.display = "block";
+                adminPanel.style.display = "none";
+            }
+        });
+
+        // LOAD ITEMS
+        function loadItems() {
+            onSnapshot(collection(db, "menu_items"), (snapshot) => {
+                itemsDiv.innerHTML = "";
+                snapshot.forEach((docSnap) => {
+                    const item = docSnap.data();
+                    const div = document.createElement("div");
+                    div.className = "item";
+                    div.innerHTML = `
+                        <strong>${item.name}</strong> – ₹${item.price}
+                        <br><small>${item.category}</small>
+                        <button class="delete-btn" data-id="${docSnap.id}">Delete</button>
+                    `;
+                    itemsDiv.appendChild(div);
+                });
+
+                // Attach remove handlers
+                document.querySelectorAll(".delete-btn").forEach(btn => {
+                    btn.addEventListener("click", async (e) => {
+                        const id = e.target.getAttribute("data-id");
+                        if (confirm("Delete this item?")) {
+                            await deleteDoc(doc(db, "menu_items", id));
+                        }
+                    });
+                });
+            });
+        }
     </script>
 </body>
 
