@@ -596,7 +596,44 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Only keep custom styles that don't conflict with Bootstrap or are needed */
+        /* Item Select Dropdown */
+        .item-select {
+            position: relative;
+        }
+
+        #itemSearch {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .dropdown {
+            position: absolute;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #ddd;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 6px 6px;
+        }
+
+        .dropdown div {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f9f9f9;
+        }
+
+        .dropdown div:hover {
+            background: #f2f2f2;
+        }
+
+        .dropdown.hidden {
+            display: none;
+        }
 
         .nav-link {
             font-weight: 500;
@@ -800,11 +837,10 @@
                             style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
                     </div>
 
-                    <div class="form-group" style="margin-bottom:15px;">
+                    <div class="form-group item-select" style="margin-bottom:15px;">
                         <label style="display:block; margin-bottom:5px; font-weight:600;">Item Search</label>
-                        <input type="text" id="itemSearch" placeholder="Search item..." list="menuItemsList"
-                            style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
-                        <datalist id="menuItemsList"></datalist>
+                        <input type="text" id="itemSearch" placeholder="Search item..." autocomplete="off">
+                        <div id="itemDropdown" class="dropdown hidden"></div>
                     </div>
 
                     <div class="form-group" style="margin-bottom:15px; display:flex; gap:10px;">
@@ -1765,49 +1801,83 @@
         }
 
         // 1. Load Menu & Setup Auto-Fill
+        // 1. Load Menu & Setup Auto-Fill
+        let menuItemsArray = [];
+
         function loadMenuForBilling() {
             onSnapshot(collection(db, "menu_items"), snap => {
-                const list = document.getElementById("menuItemsList");
-                if (!list) return;
-
-                list.innerHTML = "";
                 menuMap = {};
+                menuItemsArray = [];
 
                 snap.forEach(doc => {
                     const item = doc.data();
                     menuMap[item.name] = item;
-
-                    const opt = document.createElement("option");
-                    opt.value = item.name;
-                    list.appendChild(opt);
+                    menuItemsArray.push(item);
                 });
             });
 
-            // Auto-fill price listener
+            // Re-bind search listener for custom dropdown
             const searchInput = document.getElementById("itemSearch");
-            if (searchInput) {
+            const dropdown = document.getElementById("itemDropdown");
+
+            if (searchInput && dropdown) {
+                // Input Listener
                 searchInput.addEventListener("input", () => {
-                    const name = searchInput.value;
-                    const priceInput = document.getElementById("priceInput");
-                    const manualBox = document.getElementById("manualPriceBox");
+                    const q = searchInput.value.toLowerCase();
+                    dropdown.innerHTML = "";
 
-                    if (menuMap[name]) {
-                        const price = menuMap[name].price;
-                        priceInput.value = price;
+                    if (!q) {
+                        dropdown.classList.add("hidden");
+                        return;
+                    }
 
-                        // Check if pure number
-                        if (isNumericPrice(price)) {
-                            manualBox.style.display = "none";
-                        } else {
-                            manualBox.style.display = "block";
-                            document.getElementById("finalPriceInput").value = "";
-                        }
-                    } else {
-                        // Custom item or not found
-                        manualBox.style.display = "none";
+                    const matches = menuItemsArray.filter(item =>
+                        item.name.toLowerCase().includes(q)
+                    );
+
+                    if (matches.length === 0) {
+                        dropdown.classList.add("hidden");
+                        return;
+                    }
+
+                    matches.forEach(item => {
+                        const div = document.createElement("div");
+                        div.textContent = item.name;
+                        div.onclick = () => selectItem(item);
+                        dropdown.appendChild(div);
+                    });
+
+                    dropdown.classList.remove("hidden");
+                });
+
+                // Hide dropdown when clicking outside
+                document.addEventListener("click", (e) => {
+                    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.classList.add("hidden");
                     }
                 });
             }
+        }
+
+        function selectItem(item) {
+            const searchInput = document.getElementById("itemSearch");
+            const priceInput = document.getElementById("priceInput");
+            const manualBox = document.getElementById("manualPriceBox");
+            const dropdown = document.getElementById("itemDropdown");
+
+            searchInput.value = item.name;
+            priceInput.value = item.price;
+
+            // Check numeric
+            if (isNumericPrice(item.price)) {
+                manualBox.style.display = "none";
+            } else {
+                manualBox.style.display = "block";
+                document.getElementById("finalPriceInput").value = "";
+                document.getElementById("finalPriceInput").focus();
+            }
+
+            dropdown.classList.add("hidden");
         }
 
         // 2. Add Item to Bill

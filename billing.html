@@ -2,7 +2,8 @@
 <html>
 
 <head>
-    <title>Bill</title>
+    <title>Bill for Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: monospace;
@@ -10,7 +11,7 @@
             padding: 20px;
         }
 
-        .bill {
+        .bill-container {
             max-width: 350px;
             margin: auto;
             background: white;
@@ -61,22 +62,60 @@
             background: #10b981;
             color: white;
         }
+
+        /* PRINT STYLES - THERMAL PRINTER OPTIMIZED */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #billPrintArea,
+            #billPrintArea * {
+                visibility: visible;
+            }
+
+            #billPrintArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 78mm;
+                /* Slightly less than 80mm to prevent overflow */
+                padding: 0;
+                margin: 0;
+            }
+
+            .bill-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+
+            .actions {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="bill">
-        <h3 class="center">Chef Cafe</h3>
-        <p id="info" style="text-align:center; font-size:12px; color:#666;"></p>
-        <hr>
+    <div class="bill-container">
+        <!-- WRAPPER FOR PRINTING -->
+        <div id="billPrintArea">
+            <h3 class="center" style="margin-bottom:5px">Chef Cafe</h3>
+            <p id="info" style="text-align:center; font-size:12px; color:#333; margin-top:0"></p>
+            <hr>
 
-        <div id="items"></div>
+            <div id="items"></div>
 
-        <hr>
-        <div class="row" style="font-size:16px;">
-            <strong>Total</strong>
-            <strong id="total"></strong>
+            <hr>
+            <div class="row" style="font-size:16px;">
+                <strong>Total</strong>
+                <strong id="total"></strong>
+            </div>
+
+            <p style="text-align:center; font-size:12px; margin-top:20px;">Thank you for dining!</p>
         </div>
 
         <div class="actions">
@@ -89,6 +128,7 @@
         const bill = JSON.parse(localStorage.getItem("printBill"));
 
         if (bill) {
+            document.title = `Bill ${bill.billNo}`; // For PDF filename
             document.getElementById("info").innerText =
                 `Bill: ${bill.billNo} \n Table: ${bill.tableNo} | ${bill.date}`;
 
@@ -112,7 +152,8 @@
             if (navigator.share) {
                 navigator.share({
                     title: "Chef Cafe Bill",
-                    text: `Table ${bill.tableNo} - Total: ₹${bill.total} \nThank you for dining!`
+                    text: `Table ${bill.tableNo} - Total: ₹${bill.total} \nThank you for dining!`,
+                    url: window.location.href
                 }).catch(console.error);
             } else {
                 alert("Sharing not supported on this device/browser.");
