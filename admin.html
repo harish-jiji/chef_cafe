@@ -593,6 +593,28 @@
             font-size: 15px;
         }
     </style>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Only keep custom styles that don't conflict with Bootstrap or are needed */
+
+        .nav-link {
+            font-weight: 500;
+        }
+
+        .nav-link.active {
+            color: #f97316 !important;
+            border-bottom: 2px solid #f97316;
+        }
+
+        /* Keep existing necessary styles */
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ... (rest of styles can stay or be cleaned up if unused) ... */
+    </style>
 </head>
 
 <body>
@@ -632,26 +654,66 @@
     <!-- DASHBOARD -->
     <div id="adminPanel" class="admin-wrapper" style="display:none">
 
-        <header class="admin-header">
-            <div class="header-left">
-                <h1>🍽️ Chef Cafe Dashboard</h1>
-                <p>Manage your business efficiently</p>
-            </div>
-            <div class="header-right">
-                <button id="logoutBtn">Logout</button>
-            </div>
-        </header>
+        <!-- BOOTSTRAP NAVBAR -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+            <div class="container-fluid">
 
-        <!-- NAVIGATION -->
-        <nav class="admin-nav">
-            <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
-            <button class="nav-btn" data-page="menu">🍽️ Menu</button>
-            <button class="nav-btn" data-page="billing">🧾 Billing</button>
-            <button class="nav-btn" data-page="bills">📂 Bills</button>
+                <!-- Brand -->
+                <a class="navbar-brand fw-bold text-warning" href="#">
+                    🍽️ Chef Cafe Admin
+                </a>
+
+                <!-- Toggle (Mobile) -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar"
+                    aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Nav Items -->
+                <div class="collapse navbar-collapse" id="adminNavbar">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                                📊 Dashboard
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('menu')">
+                                🍽️ Menu
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('billing')">
+                                🧾 Billing
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSection('bills')">
+                                📂 Bills
+                            </a>
+                        </li>
+
+                    </ul>
+
+                    <!-- Right side -->
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fw-semibold text-muted d-none d-lg-block">
+                            Logged in
+                        </span>
+                        <button class="btn btn-outline-danger btn-sm" onclick="window.logout()">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
         </nav>
 
         <!-- DASHBOARD SECTION -->
-        <section id="dashboard">
+        <div id="dashboard" class="admin-section">
             <div class="dash-grid">
                 <div class="dash-card">
                     <h3>Bills Today</h3>
@@ -671,10 +733,10 @@
                 <h3>📊 Items Sold (Last 7 Days)</h3>
                 <canvas id="salesChart" height="120"></canvas>
             </div>
-        </section>
+        </div>
 
         <!-- MENU SECTION -->
-        <section id="menu" style="display:none">
+        <div id="menu" class="admin-section" style="display:none">
 
             <section class="add-item-card">
                 <h3>➕ Add New Menu Item</h3>
@@ -720,10 +782,10 @@
                     <!-- Items rendered here -->
                 </div>
             </section>
-        </section>
+        </div>
 
         <!-- BILLING SECTION -->
-        <section id="billing" style="display:none">
+        <div id="billing" class="admin-section" style="display:none">
             <h2>🧾 Billing</h2>
 
             <div class="billing-container"
@@ -761,7 +823,8 @@
                 <!-- RIGHT: LIVE BILL -->
                 <div class="bill-preview"
                     style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,.05); border:1px solid #eee;">
-                    <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">Current Bill</h3>
+                    <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">Current Bill
+                    </h3>
 
                     <div id="billItems"
                         style="min-height:300px; max-height:500px; overflow-y:auto; margin-bottom:20px;">
@@ -781,18 +844,19 @@
                     </button>
                 </div>
             </div>
-        </section>
+        </div>
 
         <!-- BILLS HISTORY SECTION -->
-        <section id="bills" style="display:none">
+        <div id="bills" class="admin-section" style="display:none">
             <div style="display:flex; gap:10px; margin-bottom:15px">
                 <button class="filter-btn" data-filter="today" style="padding:8px 16px;">Today</button>
                 <button class="filter-btn" data-filter="yesterday" style="padding:8px 16px;">Yesterday</button>
-                <button class="filter-btn" data-filter="7days" style="padding:8px 16px;">Last 7 Days</button>
+                <button class="filter-btn" data-filter="7days" style="padding:8px 16px;">Last 7
+                    Days</button>
             </div>
 
             <div id="billsList"></div>
-        </section>
+        </div>
 
     </div>
 
@@ -873,7 +937,7 @@
         // DOM ELEMENT REFERENCES
         // ============================================
         const loginBtn = document.getElementById("loginBtn");
-        const logoutBtn = document.getElementById("logoutBtn");
+
         const addItemBtn = document.getElementById("addItemBtn");
         const adminPanel = document.getElementById("adminPanel");
         const loginBox = document.getElementById("loginBox");
@@ -1249,26 +1313,7 @@
             });
         }
 
-        /**
-         * Handle user logout
-         */
-        if (logoutBtn) {
-            logoutBtn.addEventListener("click", async () => {
-                if (confirm('Are you sure you want to logout?')) {
-                    try {
-                        await signOut(auth);
-                        showNotification('👋 Logged out successfully', 'success');
 
-                        // Clear input fields
-                        emailInput.value = '';
-                        passwordInput.value = '';
-                    } catch (err) {
-                        console.error("Logout error:", err);
-                        showNotification('Logout failed. Please try again.', 'error');
-                    }
-                }
-            });
-        }
 
         // ============================================
         // ADD ITEM HANDLER
@@ -1641,35 +1686,56 @@
         }
 
         // ============================================
-        // NAVIGATION LOGIC (PHASE 3-D)
+        // NAVIGATION LOGIC (BOOTSTRAP)
         // ============================================
 
-        const pages = ["dashboard", "menu", "billing", "bills"];
-        const navButtons = document.querySelectorAll(".nav-btn");
-
-        function showPage(page) {
-            pages.forEach(p => {
-                const el = document.getElementById(p);
-                if (el) el.style.display = p === page ? "block" : "none";
+        window.showSection = function (section) {
+            // Hide all sections
+            document.querySelectorAll(".admin-section").forEach(sec => {
+                sec.style.display = "none";
             });
 
-            navButtons.forEach(btn => {
-                btn.classList.toggle("active", btn.dataset.page === page);
+            // Show target
+            const target = document.getElementById(section);
+            if (target) target.style.display = "block";
+
+            // Update nav active state
+            document.querySelectorAll(".nav-link").forEach(link => {
+                link.classList.remove("active");
             });
+
+            // Highlight clicked link
+            if (event && event.target) {
+                const link = event.target.closest('.nav-link');
+                if (link) link.classList.add("active");
+            }
 
             // Trigger data loads
-            if (page === "dashboard") {
+            if (section === "dashboard") {
                 loadDashboard();
-                loadActivityChart();
+                if (window.loadDashboardGraph) window.loadDashboardGraph();
             }
-            if (page === "bills") {
+            if (section === "bills") {
                 loadBills("7days");
             }
-        }
+        };
 
-        navButtons.forEach(btn => {
-            btn.onclick = () => showPage(btn.dataset.page);
-        });
+        window.logout = async () => {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    await signOut(auth);
+                    showNotification('👋 Logged out successfully', 'success');
+                    // Clear inputs
+                    const emailInput = document.getElementById("email");
+                    const passwordInput = document.getElementById("password");
+                    if (emailInput) emailInput.value = '';
+                    if (passwordInput) passwordInput.value = '';
+                } catch (err) {
+                    console.error("Logout error:", err);
+                    showNotification('Logout failed', 'error');
+                }
+            }
+        };
 
         // ============================================
         // BILLING LOGIC (USER REFINED)
@@ -2064,6 +2130,7 @@
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
