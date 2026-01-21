@@ -1960,43 +1960,31 @@
         }
 
         // 7. Button Actions
-        window.saveOnly = async function () {
+        // 7. Button Action - Save & Preview
+        window.saveBillOnly = async function () {
             try {
-                const btn = event.srcElement; // Get button to show loading
-                setButtonLoading(btn, true, "💾 Save Only");
+                // Get button safely
+                const btn = event ? (event.target || event.srcElement) : null;
+                if (btn) setButtonLoading(btn, true, "✅ Saving...");
 
-                await saveBillData();
-                showNotification("Bill saved successfully", "success");
+                // Use the shared helper to save to Firestore
+                const billData = await saveBillData();
 
-                // Reset
+                // Store for preview page
+                localStorage.setItem("printBill", JSON.stringify(billData));
+
+                // Redirect to billing.html
+                window.location.href = "billing.html";
+
+                // Clear mostly for state correctness if navigation fails or back button used
                 clearBill();
 
             } catch (e) {
                 console.error(e);
-                // Error handled in saveBillData or here
+                // Alert handled in validation or here
             } finally {
-                setButtonLoading(event.srcElement, false, "💾 Save Only");
-            }
-        };
-
-        window.saveAndPrint = async function () {
-            try {
-                const btn = event.srcElement;
-                setButtonLoading(btn, true, "🖨 Save & Print");
-
-                const bill = await saveBillData();
-
-                // Store for print page
-                localStorage.setItem("printBill", JSON.stringify(bill));
-                window.open("billing.html", "_blank");
-
-                // Reset
-                clearBill();
-
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setButtonLoading(event.srcElement, false, "🖨 Save & Print");
+                const btn = event ? (event.target || event.srcElement) : null;
+                if (btn) setButtonLoading(btn, false, "✅ Save & Preview");
             }
         };
 
