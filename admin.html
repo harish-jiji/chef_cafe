@@ -652,21 +652,23 @@
 
         <!-- DASHBOARD SECTION -->
         <section id="dashboard">
-            <div class="dashboard-grid">
-                <!-- GRAPH CARD -->
+            <div class="dash-grid">
                 <div class="dash-card">
-                    <h3>📈 Activity (Last 7 Days)</h3>
-                    <canvas id="activityChart" height="200"></canvas>
+                    <h3>Bills Today</h3>
+                    <p id="billsToday">0</p>
                 </div>
 
-                <!-- TODAY SOLD -->
                 <div class="dash-card">
-                    <h3>🧾 Today Sold Items</h3>
-                    <ul id="todaySoldList">
-                        <li style="text-align:center; color:#999; padding:20px;">Loading...</li>
-                    </ul>
+                    <h3>Items Sold Today</h3>
+                    <p id="itemsToday">0</p>
                 </div>
             </div>
+
+            <h3 style="margin-top:20px">Top Items Today</h3>
+            <div id="topItems"></div>
+
+            <h3 style="margin-top:20px">Last 7 Days Activity</h3>
+            <canvas id="activityChart" height="120"></canvas>
         </section>
 
         <!-- MENU SECTION -->
@@ -720,54 +722,80 @@
 
         <!-- BILLING SECTION -->
         <section id="billing" style="display:none">
-            <div class="bill-card">
-                <h3>🧾 New Bill</h3>
+            <h2>🧾 Billing</h2>
 
-                <div class="form-grid bill-grid">
-                    <div class="form-group">
-                        <label>Table No</label>
-                        <input type="number" id="tableNo" min="1" placeholder="Type..." required>
+            <div class="billing-top" style="display:flex; gap:10px; margin-bottom:20px; align-items:center;">
+                <label>Table No</label>
+                <input type="number" id="tableNoInput" min="1" placeholder="Enter table number"
+                    style="padding:10px; border-radius:8px; border:1px solid #ccc;">
+                <button id="startBillingBtn"
+                    style="padding:10px 20px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer;">Start
+                    Billing</button>
+            </div>
+
+            <div class="billing-body" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <!-- Left: Menu Grid -->
+                <div>
+                    <h3>Menu</h3>
+                    <div class="menu-list" id="billingMenu"
+                        style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; max-height:500px; overflow-y:auto;">
                     </div>
-
-                    <div class="form-group">
-                        <label>Item</label>
-                        <select id="billItem"></select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Qty</label>
-                        <input type="number" id="billQty" min="1" value="1">
-                    </div>
-
-                    <button id="addToBill" style="padding:12px; margin-top:0;">➕ Add</button>
                 </div>
 
-                <ul id="billList">
-                    <!-- Bill items go here -->
-                </ul>
-
-                <h4 style="text-align:right; margin-bottom:15px; font-size:18px;">Total Items: <span
-                        id="totalItems">0</span></h4>
-
-                <button id="payBill">💳 PAY & PRINT</button>
+                <!-- Right: Bill Preview -->
+                <div class="bill-preview"
+                    style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,.1);">
+                    <h3 id="billTitle">No Bill</h3>
+                    <div id="billItems" style="min-height:200px; margin:20px 0;"></div>
+                    <hr>
+                    <h3>Total: ₹<span id="billTotal">0</span></h3>
+                    <button id="printBtn" disabled
+                        style="width:100%; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px; margin-top:20px;">Print
+                        Bill</button>
+                </div>
             </div>
         </section>
 
         <!-- BILLS HISTORY SECTION -->
         <section id="bills" style="display:none">
-            <div class="bill-header">
-                <h3 style="color:#fff">📂 Bills History</h3>
-                <select id="billFilter" style="padding:8px; border-radius:8px;">
-                    <option value="today">Today</option>
-                    <option value="yesterday">Yesterday</option>
-                    <option value="7days" selected>Last 7 Days</option>
-                </select>
+            <div style="display:flex; gap:10px; margin-bottom:15px">
+                <button class="filter-btn" data-filter="today" style="padding:8px 16px;">Today</button>
+                <button class="filter-btn" data-filter="yesterday" style="padding:8px 16px;">Yesterday</button>
+                <button class="filter-btn" data-filter="7days" style="padding:8px 16px;">Last 7 Days</button>
             </div>
-            <div id="billsList">
-                <!-- Bills go here -->
-            </div>
+
+            <div id="billsList"></div>
         </section>
 
+    </div>
+
+    <!-- BILL DETAIL MODAL -->
+    <div id="billModal" style="
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.6);
+      z-index:9999;
+      align-items:center;
+      justify-content:center;
+    ">
+        <div style="
+        background:#fff;
+        width:350px;
+        max-height:90vh;
+        overflow:auto;
+        padding:20px;
+        border-radius:12px;
+        font-family:monospace;
+      ">
+            <div id="billView"></div>
+            <button id="printViewedBillBtn" style="width:100%;margin-top:10px; padding:10px; cursor:pointer;">
+                🖨️ Print
+            </button>
+            <button id="closeBillModalBtn" style="width:100%;margin-top:5px; padding:10px; cursor:pointer;">
+                ❌ Close
+            </button>
+        </div>
     </div>
 
     <!-- Firebase v12 Module -->
@@ -788,6 +816,7 @@
             deleteDoc,
             doc,
             getDoc,
+            getDocs,
             setDoc,
             increment,
             onSnapshot,
@@ -1382,58 +1411,110 @@
         }
 
         // ============================================
-        // DASHBOARD LOGIC (PHASE 3-A)
+        // DASHBOARD LOGIC (PHASE 6)
         // ============================================
 
-        const todayDate = new Date().toISOString().split("T")[0];
-        const now = Date.now();
-        const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
+        function startOfDay(ts) {
+            const d = new Date(ts);
+            d.setHours(0, 0, 0, 0);
+            return d.getTime();
+        }
 
-        /**
-         * Load Activity Graph (Last 7 Days)
-         */
-        function loadDashboardGraph() {
+        function endOfDay(ts) {
+            const d = new Date(ts);
+            d.setHours(23, 59, 59, 999);
+            return d.getTime();
+        }
+
+        async function loadDashboard() {
+            const now = Date.now();
+            const start = startOfDay(now);
+            const end = endOfDay(now);
+
+            // Query only PAID bills for today
             const q = query(
-                collection(db, "daily_sales"),
-                where("lastUpdated", ">=", sevenDaysAgo),
-                orderBy("lastUpdated", "asc")
+                collection(db, "bills"),
+                where("timestamp", ">=", start),
+                where("timestamp", "<=", end),
+                where("status", "==", "PAID")
             );
 
-            onSnapshot(q, (snapshot) => {
-                const graphData = [];
+            onSnapshot(q, snapshot => {
+                let billCount = snapshot.size;
+                let totalItemsCount = 0;
+                let itemMap = {};
+
                 snapshot.forEach(docSnap => {
-                    const d = docSnap.data();
-                    graphData.push({
-                        date: d.date,
-                        totalItems: d.totalItems || 0
-                    });
+                    const bill = docSnap.data();
+                    if (bill.items) {
+                        bill.items.forEach(i => {
+                            totalItemsCount += i.qty;
+                            itemMap[i.name] = (itemMap[i.name] || 0) + i.qty;
+                        });
+                    }
                 });
 
-                console.log("📊 Graph data:", graphData);
-                renderGraph(graphData);
+                // Update Widgets
+                const billsTodayEl = document.getElementById("billsToday");
+                const itemsTodayEl = document.getElementById("itemsToday");
+
+                if (billsTodayEl) billsTodayEl.innerText = billCount;
+                if (itemsTodayEl) itemsTodayEl.innerText = totalItemsCount;
+
+                // Top Items
+                const topItemsDiv = document.getElementById("topItems");
+                if (topItemsDiv) {
+                    topItemsDiv.innerHTML = "";
+                    Object.entries(itemMap)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5)
+                        .forEach(([name, qty]) => {
+                            topItemsDiv.innerHTML += `
+                                <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee;">
+                                    <span>${name}</span>
+                                    <strong>${qty}</strong>
+                                </div>
+                            `;
+                        });
+                }
             });
         }
 
-        /**
-         * Render Chart.js Graph
-         */
-        let activityChart;
-        function renderGraph(graphData) {
+        async function loadActivityChart() {
             const ctx = document.getElementById("activityChart");
             if (!ctx) return;
 
-            const labels = graphData.map(d => d.date);
-            const values = graphData.map(d => d.totalItems);
+            const labels = [];
+            const data = [];
 
-            if (activityChart) activityChart.destroy();
+            // Last 7 days loop
+            for (let i = 6; i >= 0; i--) {
+                const day = Date.now() - (i * 86400000);
+                const s = startOfDay(day);
+                const e = endOfDay(day);
 
-            activityChart = new Chart(ctx, {
+                const q = query(
+                    collection(db, "bills"),
+                    where("timestamp", ">=", s),
+                    where("timestamp", "<=", e),
+                    where("status", "==", "PAID")
+                );
+
+                const snap = await getDocs(q);
+
+                labels.push(new Date(day).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }));
+                data.push(snap.size);
+            }
+
+            if (window.myChart) window.myChart.destroy();
+
+            window.myChart = new Chart(ctx, {
                 type: "line",
                 data: {
                     labels,
                     datasets: [{
-                        label: "Items Sold",
-                        data: values,
+                        label: "Bills Paid",
+                        data,
                         borderColor: "#667eea",
                         backgroundColor: "rgba(102,126,234,0.15)",
                         fill: true,
@@ -1443,60 +1524,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
                 }
-            });
-        }
-
-        /**
-         * Load Today's Sold Items
-         */
-        function loadTodaySoldItems() {
-            const q = query(
-                collection(db, "today_items"),
-                where("date", "==", todayDate)
-            );
-
-            onSnapshot(q, (snapshot) => {
-                const todayList = [];
-                snapshot.forEach(docSnap => {
-                    todayList.push(docSnap.data());
-                });
-
-                // Sort: Highest qty first
-                todayList.sort((a, b) => b.qty - a.qty);
-
-                console.log("📋 Today sold:", todayList);
-                renderTodayList(todayList);
-            });
-        }
-
-        /**
-         * Render Today's List
-         */
-        function renderTodayList(items) {
-            const list = document.getElementById("todaySoldList");
-            if (!list) return;
-
-            list.innerHTML = "";
-
-            if (items.length === 0) {
-                list.innerHTML = "<li style='padding:15px;text-align:center;color:#999'>No sales today yet.</li>";
-                return;
-            }
-
-            items.forEach(item => {
-                list.innerHTML += `
-                    <li style="display:flex;justify-content:space-between;padding:12px 0;">
-                        <span>${item.name}</span>
-                        <strong style="color:#667eea">${item.qty}</strong>
-                    </li>
-                `;
             });
         }
 
@@ -1516,310 +1546,497 @@
             navButtons.forEach(btn => {
                 btn.classList.toggle("active", btn.dataset.page === page);
             });
+
+            // Trigger data loads
+            if (page === "dashboard") {
+                loadDashboard();
+                loadActivityChart();
+            }
+            if (page === "bills") {
+                loadBills("7days");
+            }
         }
 
-        // Add Click Handlers
         navButtons.forEach(btn => {
             btn.onclick = () => showPage(btn.dataset.page);
         });
 
         // ============================================
-        // BILLING LOGIC (PHASE 3-B)
+        // BILLING LOGIC (PHASES 4.2 & 4.3)
         // ============================================
 
-        let currentBill = [];
+        let currentBill = null;
+        let currentBillId = null;
 
-        /**
-         * Load items into billing select
-         */
-        function loadBillingItems() {
-            onSnapshot(collection(db, "menu_items"), snapshot => {
-                const select = document.getElementById("billItem");
-                if (!select) return;
+        // Bill Number Generator (B-YYYYMMDD-XXX)
+        async function generateBillNo() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}${mm}${dd}`; // 20260121
 
-                select.innerHTML = "";
-                snapshot.forEach(docSnap => {
-                    const item = docSnap.data();
-                    select.innerHTML += `<option value="${item.name}">${item.name}</option>`;
+            const start = startOfDay(Date.now());
+            const end = endOfDay(Date.now());
+
+            // Count bills today to generate next sequence
+            const q = query(collection(db, "bills"), where("timestamp", ">=", start), where("timestamp", "<=", end));
+            const snap = await getDocs(q);
+            const count = snap.size + 1;
+
+            const suffix = String(count).padStart(3, '0');
+            return `B-${dateStr}-${suffix}`;
+        }
+
+        // 1. Start Billing (Lock Table)
+        window.startBilling = async () => {
+            const tableNoInput = document.getElementById("tableNoInput");
+            const tableNo = Number(tableNoInput.value);
+            const btn = document.getElementById("startBillingBtn");
+
+            if (!tableNo) {
+                showNotification("Please enter a table number", "error");
+                return;
+            }
+
+            setButtonLoading(btn, true, "Start Billing");
+
+            try {
+                // Check for existing OPEN bill
+                const q = query(
+                    collection(db, "bills"),
+                    where("tableNo", "==", tableNo),
+                    where("status", "==", "OPEN")
+                );
+
+                const snap = await getDocs(q);
+
+                if (!snap.empty) {
+                    // Resume existing bill
+                    const docSnap = snap.docs[0];
+                    currentBill = docSnap.data();
+                    currentBillId = docSnap.id;
+                    showNotification(`Found open bill for Table ${tableNo}`, "success");
+                } else {
+                    // Create new bill
+                    const billNo = await generateBillNo();
+                    const newBill = {
+                        billNo,
+                        tableNo,
+                        items: [],
+                        total: 0,
+                        status: "OPEN",
+                        date: new Date().toISOString().split("T")[0],
+                        timestamp: Date.now()
+                    };
+
+                    const docRef = await addDoc(collection(db, "bills"), newBill);
+                    currentBill = newBill;
+                    currentBillId = docRef.id;
+                    showNotification(`Started new bill ${billNo}`, "success");
+                }
+
+                renderBill();
+                loadBillingMenu();
+
+                // Update UI
+                document.getElementById("printBtn").disabled = false;
+
+            } catch (e) {
+                console.error(e);
+                showNotification("Error starting bill: " + e.message, "error");
+            } finally {
+                setButtonLoading(btn, false, "Start Billing");
+            }
+        };
+
+        // 2. Load Menu for Billing (Grid)
+        function loadBillingMenu() {
+            onSnapshot(collection(db, "menu_items"), snap => {
+                const div = document.getElementById("billingMenu");
+                if (!div) return;
+                div.innerHTML = "";
+
+                snap.forEach(d => {
+                    const item = d.data();
+                    // Clean price for display
+                    const priceDisplay = isNaN(item.price) ? item.price : `₹${item.price}`;
+
+                    div.innerHTML += `
+                    <button onclick="addItem('${item.name}', '${item.price}')" 
+                        style="
+                            padding:15px; 
+                            background:#f9fafb; 
+                            border:1px solid #e5e7eb; 
+                            border-radius:10px; 
+                            cursor:pointer;
+                            text-align:center;
+                            transition:all 0.2s;
+                        "
+                        onmouseover="this.style.background='#edf2f7'"
+                        onmouseout="this.style.background='#f9fafb'"
+                    >
+                        <div style="font-weight:600; margin-bottom:5px;">${item.name}</div>
+                        <div style="color:#667eea; font-size:13px;">${priceDisplay}</div>
+                    </button>
+                    `;
                 });
             });
         }
 
-        /**
-         * Add Item to Bill
-         */
-        document.getElementById("addToBill").onclick = () => {
-            const select = document.getElementById("billItem");
-            const qtyInput = document.getElementById("billQty");
+        // 3. Add Item to Bill
+        window.addItem = (name, priceText) => {
+            if (!currentBill) {
+                showNotification("Please start billing first", "error");
+                return;
+            }
 
-            const name = select.value;
-            const qty = Number(qtyInput.value);
+            // Find if item exists in bill
+            let item = currentBill.items.find(i => i.name === name);
 
-            if (!name) return;
+            if (item) {
+                item.qty += 1;
+            } else {
+                currentBill.items.push({ name, qty: 1, priceText });
+            }
 
-            const existing = currentBill.find(i => i.name === name);
-            if (existing) existing.qty += qty;
-            else currentBill.push({ name, qty });
-
-            // Reset qty
-            qtyInput.value = 1;
-
+            calculateTotal();
+            saveBill();
             renderBill();
         };
 
-        /**
-         * Render Current Bill
-         */
-        function renderBill() {
-            const list = document.getElementById("billList");
-            const total = document.getElementById("totalItems");
-
-            list.innerHTML = "";
-            let sum = 0;
-
-            currentBill.forEach((item, i) => {
-                sum += item.qty;
-                list.innerHTML += `
-                <li>
-                    <span>${item.name} <small style="color:#666">x ${item.qty}</small></span>
-                    <button onclick="window.removeBillItem(${i})" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
-                </li>
-                `;
+        // 4. Calculate Total
+        function calculateTotal() {
+            let total = 0;
+            currentBill.items.forEach(i => {
+                const num = parseFloat(i.priceText); // simple parse
+                if (!isNaN(num)) total += num * i.qty;
             });
-
-            total.textContent = sum;
+            currentBill.total = total;
         }
 
-        /**
-         * Remove Item from Bill
-         */
-        window.removeBillItem = (index) => {
-            currentBill.splice(index, 1);
+        // 5. Save Bill (Sync)
+        async function saveBill() {
+            if (!currentBillId) return;
+            try {
+                await updateDoc(doc(db, "bills", currentBillId), {
+                    items: currentBill.items,
+                    total: currentBill.total
+                });
+            } catch (e) {
+                console.error("Auto-save failed", e);
+            }
+        }
+
+        // 6. Render Bill Preview
+        function renderBill() {
+            const billTitle = document.getElementById("billTitle");
+            const billItems = document.getElementById("billItems");
+            const billTotal = document.getElementById("billTotal");
+
+            if (currentBill) {
+                billTitle.innerText = `Bill ${currentBill.billNo} (Table ${currentBill.tableNo})`;
+                billTotal.innerText = currentBill.total;
+
+                billItems.innerHTML = "";
+                currentBill.items.forEach((item, index) => {
+                    billItems.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+                            <span>${item.name} <small>x${item.qty}</small></span>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <span>₹${(parseFloat(item.priceText) || 0) * item.qty}</span>
+                                <button onclick="window.decreaseQty(${index})" style="background:#fee2e2; color:#ef4444; border:none; width:24px; height:24px; border-radius:4px; cursor:pointer;">-</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                billTitle.innerText = "No Bill";
+                billItems.innerHTML = "<p style='color:#999; text-align:center; padding-top:20px'>Select a table to start</p>";
+                billTotal.innerText = "0";
+            }
+        }
+
+        // Helper: Decrease Qty
+        window.decreaseQty = (index) => {
+            if (!currentBill) return;
+
+            const item = currentBill.items[index];
+            if (item.qty > 1) {
+                item.qty -= 1;
+            } else {
+                currentBill.items.splice(index, 1);
+            }
+
+            calculateTotal();
+            saveBill();
             renderBill();
         }
 
-        /**
-         * Generate Unique Bill No
-         */
-        function generateBillNo() {
-            const d = new Date();
-            return `B-${d.getFullYear()}${d.getMonth() + 1}${d.getDate()}-${Date.now().toString().slice(-4)}`;
-        }
-
-        /**
-         * UPDATE DASHBOARD (PHASE 3-A1)
-         */
-        async function updateDashboardAfterPayment(bill) {
-            const dayRef = doc(db, "daily_sales", bill.date);
-
-            // 1️⃣ Update DAILY SALES
-            const totalQty = bill.items.reduce((sum, item) => sum + item.qty, 0);
-
-            await setDoc(
-                dayRef,
-                {
-                    date: bill.date,
-                    totalItems: increment(totalQty),
-                    lastUpdated: Date.now()
-                },
-                { merge: true }
-            );
-
-            // 2️⃣ Update TODAY ITEMS
-            for (const item of bill.items) {
-                // Creates a safe ID replacing spaces
-                const safeId = item.name.replace(/\s+/g, "_");
-                const itemRef = doc(db, "today_items", safeId);
-
-                await setDoc(
-                    itemRef,
-                    {
-                        name: item.name,
-                        qty: increment(item.qty),
-                        date: bill.date
-                    },
-                    { merge: true }
-                );
-            }
-        }
-
-        /**
-         * PAY & PRINT
-         */
-        document.getElementById("payBill").onclick = async () => {
-            const tableNo = document.getElementById("tableNo").value;
-
-            if (!tableNo) {
-                showNotification("Please enter Table Number", "error");
-                return;
-            }
-            if (currentBill.length === 0) {
+        // 7. Finalize & Print
+        window.finalizeBill = async () => {
+            if (!currentBill || currentBill.items.length === 0) {
                 showNotification("Bill is empty", "error");
                 return;
             }
 
-            if (!confirm("Confirm Payment & Print?")) return;
+            if (!confirm("Confirm payment and print bill?")) return;
 
-            setButtonLoading(document.getElementById("payBill"), true, "💳 PAY & PRINT");
+            const btn = document.getElementById("printBtn");
+            setButtonLoading(btn, true, "Print Bill");
 
             try {
-                const bill = {
-                    billNo: generateBillNo(),
-                    tableNo: Number(tableNo),
-                    date: todayDate,
-                    timestamp: Date.now(),
-                    items: currentBill,
-                    total: currentBill.reduce((s, i) => s + i.qty, 0),
-                    status: "PAID"
-                };
+                await updateDoc(doc(db, "bills", currentBillId), {
+                    status: "PAID",
+                    paidAt: Date.now()
+                });
 
-                // 1. Save Bill
-                await addDoc(collection(db, "bills"), bill);
+                printBill();
 
-                // 2. Update Dashboard Stats
-                await updateDashboardAfterPayment(bill);
-
-                showNotification("✅ Bill PAID!", "success");
-
-                // 3. Print
-                window.print();
-
-                // 4. Reset
-                currentBill = [];
+                // Reset
+                currentBill = null;
+                currentBillId = null;
+                document.getElementById("tableNoInput").value = "";
+                document.getElementById("printBtn").disabled = true;
                 renderBill();
-                document.getElementById("tableNo").value = "";
 
-            } catch (err) {
-                console.error(err);
-                showNotification("Error: " + err.message, "error");
-            } finally {
-                setButtonLoading(document.getElementById("payBill"), false, "💳 PAY & PRINT");
-            }
-        };
+                showNotification("Bill Paid & Printed", "success");
 
-        // ============================================
-        // BILLS HISTORY (PHASE 3-C & 3-H)
-        // ============================================
-
-        // const sevenDaysAgo is already defined in Dashboard Logic
-        let allBills = []; // Cache for client-side filtering
-
-        function loadBills(filter = '7days') {
-            // Initial Load (Realtime)
-            if (allBills.length === 0) {
-                const billsRef = collection(db, "bills");
-                const q = query(
-                    billsRef,
-                    where("timestamp", ">=", sevenDaysAgo),
-                    orderBy("timestamp", "desc")
-                );
-
-                onSnapshot(q, snapshot => {
-                    allBills = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderBills(filter);
-                });
-            } else {
-                // Just filter existing data
-                renderBills(filter);
-            }
-        }
-
-        // Render with Filter
-        function renderBills(filter) {
-            const container = document.getElementById("billsList");
-            if (!container) return;
-
-            container.innerHTML = "";
-
-            const filtered = allBills.filter(bill => {
-                if (filter === "today") return isToday(bill.date);
-                if (filter === "yesterday") return isYesterday(bill.date);
-                return true; // 7days (default)
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = "<p style='color:#fff; text-align:center; padding:20px;'>No bills found.</p>";
-                return;
-            }
-
-            filtered.forEach(b => {
-                const totalItems = b.items ? b.items.reduce((s, i) => s + i.qty, 0) : 0;
-
-                container.innerHTML += `
-                    <div class="history-card">
-                        <div class="bill-info">
-                            <h4>#${b.billNo}</h4>
-                            <div class="bill-meta">
-                                Table ${b.tableNo} • ${b.date}
-                            </div>
-                        </div>
-                        <div class="bill-actions">
-                            <span style="font-weight:bold; margin-right:15px;">${totalItems} items</span>
-                            <span class="status-tag" style="background:${b.status === 'PAID' ? '#d1fae5' : '#fee2e2'}; color:${b.status === 'PAID' ? '#047857' : '#b91c1c'}; padding:4px 8px; border-radius:4px; font-size:12px; margin-right:8px;">${b.status}</span>
-                            <button class="print-btn" onclick="window.reprintBill('${b.id}')">🖨 Print</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // Helpers
-        function isToday(dateStr) {
-            const today = new Date().toISOString().split("T")[0];
-            return dateStr === today;
-        }
-
-        function isYesterday(dateStr) {
-            const d = new Date();
-            d.setDate(d.getDate() - 1);
-            return dateStr === d.toISOString().split("T")[0];
-        }
-
-        // Filter Change
-        document.getElementById("billFilter").onchange = (e) => {
-            renderBills(e.target.value);
-        };
-
-        // Reprint
-        window.reprintBill = async (id) => {
-            try {
-                const docRef = doc(db, "bills", id);
-                const snap = await getDoc(docRef);
-                if (!snap.exists()) return;
-
-                const bill = snap.data();
-
-                let printContent = `
-CHEFS CAFE - BILL COPY
-Bill No: ${bill.billNo}
-Table: ${bill.tableNo}
-Date: ${bill.date}
-------------------------
-`;
-                bill.items.forEach(i => {
-                    printContent += `${i.name} x ${i.qty}\n`;
-                });
-                printContent += `------------------------
-Total Qty: ${bill.total}
-Status: RE-PRINT
-`;
-
-                const win = window.open("", "", "width=300,height=600");
-                win.document.write(`<pre style="font-family:monospace">${printContent}</pre>`);
-                win.document.close();
-                win.focus();
-                win.print();
-                win.close();
             } catch (e) {
                 console.error(e);
-                alert("Error printing");
+                showNotification("Error finalizing bill", "error");
+            } finally {
+                setButtonLoading(btn, false, "Print Bill");
             }
         };
 
+        // 8. Print Logic
+        function printBill() {
+            if (!currentBill) return;
+
+            let rows = "";
+            currentBill.items.forEach(i => {
+                rows += `
+                  <tr>
+                    <td>${i.name}</td>
+                    <td>${i.qty}</td>
+                    <td>${(parseFloat(i.priceText) || 0) * i.qty}</td>
+                  </tr>
+                `;
+            });
+
+            const win = window.open("", "PRINT", "height=600,width=400");
+
+            win.document.write(`
+                <html>
+                  <head>
+                    <title>Bill ${currentBill.billNo}</title>
+                    <style>
+                      body { font-family: monospace; padding: 10px; }
+                      h2, h3 { text-align: center; margin: 5px 0; }
+                      table { width: 100%; border-collapse: collapse; margin-top:10px; }
+                      td, th { text-align: left; padding: 5px 0; }
+                      hr { border-top: 1px dashed #000; margin: 10px 0; }
+                    </style>
+                  </head>
+                  <body>
+                    <h2>Chef Cafe</h2>
+                    <p style="text-align:center">Tasty & Spicy</p>
+                    <hr>
+                    <p>Bill: ${currentBill.billNo}</p>
+                    <p>Table: ${currentBill.tableNo}</p>
+                    <p>Date: ${new Date().toLocaleString()}</p>
+                    <hr>
+                    <table>
+                      <tr><th>Item</th><th>Qty</th><th>Amt</th></tr>
+                      ${rows}
+                    </table>
+                    <hr>
+                    <h3>Total: ₹${currentBill.total}</h3>
+                    <p style="text-align:center; margin-top:20px;">Thank You! Visit Again 🙏</p>
+                  </body>
+                </html>
+            `);
+
+            win.document.close();
+            win.focus();
+            setTimeout(() => {
+                win.print();
+                win.close();
+            }, 500);
+        }
+
+
         // ============================================
-        // INITIALIZATION COMPLETE
+        // BILLS HISTORY (PHASE 5)
         // ============================================
-        console.log('🚀 Chef Cafe Admin Dashboard initialized');
+
+        window.loadBills = (filterType) => {
+            const billsList = document.getElementById("billsList");
+            if (!billsList) return;
+
+            billsList.innerHTML = "<p style='text-align:center; padding:20px'>Loading bills...</p>";
+
+            const now = Date.now();
+            let start, end;
+
+            if (filterType === "today") {
+                start = startOfDay(now);
+                end = endOfDay(now);
+            } else if (filterType === "yesterday") {
+                const y = now - 86400000;
+                start = startOfDay(y);
+                end = endOfDay(y);
+            } else { // 7days
+                start = now - (7 * 86400000);
+                end = now;
+            }
+
+            const q = query(
+                collection(db, "bills"),
+                where("timestamp", ">=", start),
+                where("timestamp", "<=", end),
+                orderBy("timestamp", "desc")
+            );
+
+            onSnapshot(q, snapshot => {
+                if (snapshot.empty) {
+                    billsList.innerHTML = "<div class='empty-state'><p>No bills found for this period</p></div>";
+                    return;
+                }
+
+                billsList.innerHTML = "";
+
+                snapshot.forEach(docSnap => {
+                    const b = docSnap.data();
+                    const totalQty = b.items ? b.items.reduce((acc, i) => acc + i.qty, 0) : 0;
+
+                    billsList.innerHTML += `
+                        <div class="history-card" onclick="openBill('${docSnap.id}')" style="cursor:pointer">
+                            <div class="bill-info">
+                                <h4>${b.billNo}</h4>
+                                <div class="bill-meta">
+                                    Table ${b.tableNo} • ${b.date}
+                                </div>
+                            </div>
+                            <div class="bill-actions">
+                                <span style="margin-right:15px; font-weight:600">₹${b.total}</span>
+                                <span class="status-tag" style="
+                                    background:${b.status === 'PAID' ? '#d1fae5' : '#fee2e2'}; 
+                                    color:${b.status === 'PAID' ? '#047857' : '#b91c1c'}; 
+                                    padding:4px 8px; 
+                                    border-radius:4px; 
+                                    font-size:12px;
+                                ">${b.status}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            // Update active buttons
+            document.querySelectorAll(".filter-btn").forEach(btn => {
+                btn.style.background = btn.dataset.filter === filterType ? "#667eea" : "#f3f4f6";
+                btn.style.color = btn.dataset.filter === filterType ? "white" : "#333";
+            });
+        };
+
+        // Filter Buttons Handler
+        document.querySelectorAll(".filter-btn").forEach(btn => {
+            btn.addEventListener('click', () => {
+                loadBills(btn.dataset.filter);
+            });
+        });
+
+        // ============================================
+        // BILL DETAIL VIEW (PHASE 7)
+        // ============================================
+
+        let viewedBill = null;
+
+        window.openBill = async (id) => {
+            try {
+                const snap = await getDoc(doc(db, "bills", id));
+                if (!snap.exists()) return;
+
+                viewedBill = snap.data();
+
+                let rows = "";
+                viewedBill.items.forEach(i => {
+                    rows += `
+                      <tr>
+                        <td>${i.name}</td>
+                        <td style="text-align:right">${i.qty}</td>
+                      </tr>
+                    `;
+                });
+
+                document.getElementById("billView").innerHTML = `
+                    <h3 style="text-align:center">Chef Cafe</h3>
+                    <p>Bill: ${viewedBill.billNo}</p>
+                    <p>Table: ${viewedBill.tableNo}</p>
+                    <p>Date: ${new Date(viewedBill.timestamp).toLocaleString()}</p>
+                    <hr>
+                    <table width="100%">
+                      ${rows}
+                    </table>
+                    <hr>
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:18px">
+                        <span>Total:</span>
+                        <span>₹${viewedBill.total}</span>
+                    </div>
+                `;
+
+                document.getElementById("billModal").style.display = "flex";
+            } catch (e) {
+                console.error(e);
+                showNotification("Error loading bill details", "error");
+            }
+        };
+
+        document.getElementById("closeBillModalBtn").onclick = () => {
+            document.getElementById("billModal").style.display = "none";
+        };
+
+        document.getElementById("printViewedBillBtn").onclick = () => {
+            if (!viewedBill) return;
+
+            let rows = "";
+            viewedBill.items.forEach(i => {
+                rows += `
+                  <tr>
+                    <td>${i.name}</td>
+                    <td>${i.qty}</td>
+                  </tr>
+                `;
+            });
+
+            const win = window.open("", "PRINT", "width=400,height=600");
+
+            win.document.write(`
+                <html>
+                  <body style="font-family:monospace;padding:10px">
+                    <h3 style="text-align:center">Chef Cafe</h3>
+                    <p>Bill: ${viewedBill.billNo}</p>
+                    <p>Table: ${viewedBill.tableNo}</p>
+                    <p>${new Date(viewedBill.timestamp).toLocaleString()}</p>
+                    <hr>
+                    <table width="100%">
+                      <tr><th>Item</th><th>Qty</th></tr>
+                      ${rows}
+                    </table>
+                    <hr>
+                    <h3>Total: ₹${viewedBill.total}</h3>
+                    <p style="text-align:center">Copy (Re-Print)</p>
+                  </body>
+                </html>
+              `);
+
+            win.document.close();
+            win.focus();
+            win.print();
+            win.close();
+        };
     </script>
 </body>
 
