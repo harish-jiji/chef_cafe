@@ -841,13 +841,19 @@
                     <div
                         style="border-top:2px solid #333; padding-top:15px; display:flex; justify-content:space-between; font-size:1.5em; font-weight:bold;">
                         <span>Grand Total:</span>
-                        <span>₹<span id="billTotal">0</span></span>
+                        <span><span id="billTotal">₹0</span></span>
                     </div>
 
-                    <button onclick="printBill()"
-                        style="width:100%; margin-top:20px; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; cursor:pointer; font-size:1.2em; font-weight:bold;">
-                        🖨 Print & Save Bill
-                    </button>
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button onclick="saveOnly()"
+                            style="flex:1; padding:15px; background:#667eea; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
+                            💾 Save Only
+                        </button>
+                        <button onclick="saveAndPrint()"
+                            style="flex:1; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
+                            🖨 Save & Print
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1763,13 +1769,26 @@
 
                     const opt = document.createElement("option");
                     opt.value = item.name;
-                    // Store price in dataset or just use map
                     list.appendChild(opt);
                 });
             });
+
+            // Auto-fill price listener
+            const searchInput = document.getElementById("itemSearch");
+            if (searchInput) {
+                searchInput.addEventListener("input", () => {
+                    const name = searchInput.value;
+                    const priceInput = document.getElementById("priceInput");
+
+                    if (menuMap[name]) {
+                        // If price is missing or null, show empty string
+                        priceInput.value = menuMap[name].price ?? "";
+                    }
+                });
+            }
         }
 
-        // B. Add Item to Bill
+        // 2. Add Item to Bill
         window.addItemToBill = function () {
             const nameInput = document.getElementById("itemSearch");
             const qtyInput = document.getElementById("qtyInput");
@@ -1780,25 +1799,18 @@
             const qty = Number(qtyInput.value);
 
             if (!name) return alert("Please search/select an item");
-            if (!menuMap[name] && !priceInput.value) return alert("Item not found in menu, please enter price manually");
+
+            // Allow adding items even if not in menuMap (custom items), but warn if no price
+            if (!priceInput.value) return alert("Please enter price");
 
             // Set table no if first item
             if (currentBill.items.length === 0) {
                 currentBill.tableNo = tableInput.value;
             }
-            // Sync table no if changed
             currentBill.tableNo = tableInput.value;
 
-            const basePrice = menuMap[name] ? menuMap[name].price : 0;
-            // Parse price if it's "150 / 180" -> take user input or base
-            let price = Number(priceInput.value); // User override
-
-            if (!price) {
-                // Try to parse base price
-                const parsed = parseFloat(basePrice);
-                if (!isNaN(parsed)) price = parsed;
-                else price = 0;
-            }
+            // Use the value from the input directly (it might be text or number)
+            const price = priceInput.value;
 
             currentBill.items.push({
                 name,
@@ -1806,49 +1818,85 @@
                 price
             });
 
-            recalculateBill();
+            renderBillItems();
 
-            // Clear inputs
+            // Reset inputs for next item
             nameInput.value = "";
             qtyInput.value = 1;
             priceInput.value = "";
             nameInput.focus();
         };
 
-        // C. Auto Total Calculation
+
+
+        // 3. Render Bill Items (with inplace edit)
+        function renderBillItems() {
+            const container = document.getElementById("billItems");
+            if (!container) return;
+
+            container.innerHTML = "";
+
+            if (currentBill.items.length === 0) {
+                container.innerHTML = "<p style='color:#999; text-align:center; padding-top:50px;'>No items added</p>";
+            } else {
+                currentBill.items.forEach((item, index) => {
+                    container.innerHTML += `
+                      <div class="bill-row" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee;">
+                        <span style="flex:2; font-weight:500;">${item.name}</span>
+
+                        <div style="flex:1; text-align:center;">
+                            <input type="number" min="1" value="${item.qty}"
+                              onchange="updateQty(${index}, this.value)"
+                              style="width:50px; padding:4px; text-align:center; border:1px solid #ddd; border-radius:4px;">
+                        </div>
+
+                        <span style="flex:1; text-align:right;">₹${item.price}</span>
+
+                        <button onclick="removeItem(${index})" 
+                           style="margin-left:10px; background:none; border:none; color:red; cursor:pointer; font-size:16px;">
+                           ✖
+                        </button>
+                      </div>
+                    `;
+                });
+            }
+
+            recalculateBill();
+        }
+
+        // 4. Qty Update & Remove
+        window.updateQty = function (index, newQty) {
+            const q = Number(newQty);
+            if (q > 0) {
+                currentBill.items[index].qty = q;
+                recalculateBill();
+            }
+        };
+
+        window.removeItem = function (index) {
+            currentBill.items.splice(index, 1);
+            renderBillItems();
+        };
+
+        // 5. Auto Total Calculation (Safe)
         function recalculateBill() {
             let total = 0;
 
-            currentBill.items.forEach(i => {
-                total += i.qty * i.price;
+            currentBill.items.forEach(item => {
+                const p = Number(item.price);
+                // Only add to total if price is numeric
+                if (!isNaN(p)) {
+                    total += p * item.qty;
+                }
             });
 
             currentBill.total = total;
             const totalEl = document.getElementById("billTotal");
             if (totalEl) totalEl.innerText = "₹" + total;
-
-            // Render details
-            const billBox = document.getElementById("billItems");
-            if (billBox) {
-                billBox.innerHTML = "";
-                currentBill.items.forEach((item, index) => {
-                    billBox.innerHTML += `
-                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px 0;">
-                        <span>${item.name} x ${item.qty}</span>
-                        <span>₹${item.price * item.qty}</span>
-                        <button onclick="removeFromBill(${index})" style="color:red; background:none; border:none; cursor:pointer;">x</button>
-                     </div>`;
-                });
-            }
         }
 
-        window.removeFromBill = function (index) {
-            currentBill.items.splice(index, 1);
-            recalculateBill();
-        };
-
-        // E. Save Bill to Firestore
-        async function saveBill() {
+        // 6. Save Bill Data (Shared)
+        async function saveBillData() {
             if (!currentBill.tableNo || currentBill.items.length === 0) {
                 alert("Incomplete bill: Need Table No and Items");
                 throw new Error("Incomplete bill");
@@ -1857,45 +1905,94 @@
             const now = Date.now();
             const dateStr = new Date().toISOString().split("T")[0];
 
-            await addDoc(collection(db, "bills"), {
-                billNo: "B-" + now, // Simple bill no as requested
+            // Generate Bill No
+            const billNo = await generateBillNo();
+
+            const billData = {
+                billNo: billNo,
                 tableNo: currentBill.tableNo,
                 items: currentBill.items,
                 total: currentBill.total,
                 status: "PAID",
                 timestamp: now,
                 date: dateStr
-            });
+            };
 
-            // alert("Bill saved"); // User code has alert, but maybe I should use notification? User said "alert('Bill saved')". I will stick to user request.
+            await addDoc(collection(db, "bills"), billData);
+
+            // Return for printing usage
+            return billData;
         }
 
-        // F. Print Bill
-        window.printBill = function () {
-            // User's code: saveBill().then(() => { window.print(); });
-            // I need to handle the async nature and errors
-            saveBill().then(() => {
-                // alert("Bill saved"); // saveBill already might alert? User code logic:
-                /*
-                 async function saveBill() { ... alert("Bill saved"); }
-                 window.printBill = function () { saveBill().then(() => { window.print(); }); };
-                */
-                // Proceed to print
-                window.print();
+        // 7. Button Actions
+        window.saveOnly = async function () {
+            try {
+                const btn = event.srcElement; // Get button to show loading
+                setButtonLoading(btn, true, "💾 Save Only");
 
-                // Clear bill after print? User didn't specify, but usually yes. 
-                // I will clear it to be safe.
-                currentBill = { tableNo: null, items: [], total: 0 };
-                recalculateBill();
-                document.getElementById("tableInput").value = "";
-                if (document.getElementById("billTotal")) document.getElementById("billTotal").innerText = "0";
-                if (document.getElementById("billItems")) document.getElementById("billItems").innerHTML = "<p>Bill Saved & Printed</p>";
+                await saveBillData();
+                showNotification("Bill saved successfully", "success");
 
-            }).catch(err => {
-                console.error(err);
-                // alert handles in saveBill if validation fails?
-            });
+                // Reset
+                clearBill();
+
+            } catch (e) {
+                console.error(e);
+                // Error handled in saveBillData or here
+            } finally {
+                setButtonLoading(event.srcElement, false, "💾 Save Only");
+            }
         };
+
+        window.saveAndPrint = async function () {
+            try {
+                const btn = event.srcElement;
+                setButtonLoading(btn, true, "🖨 Save & Print");
+
+                const bill = await saveBillData();
+
+                // Store for print page
+                localStorage.setItem("printBill", JSON.stringify(bill));
+                window.open("billing.html", "_blank");
+
+                // Reset
+                clearBill();
+
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setButtonLoading(event.srcElement, false, "🖨 Save & Print");
+            }
+        };
+
+        function clearBill() {
+            currentBill = { tableNo: null, items: [], total: 0 };
+            renderBillItems();
+            document.getElementById("tableInput").value = "";
+            document.getElementById("itemSearch").value = "";
+            document.getElementById("qtyInput").value = 1;
+            document.getElementById("priceInput").value = "";
+            document.getElementById("billTotal").innerText = "₹0";
+        }
+
+        // Keep generateBillNo as it was useful
+        async function generateBillNo() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}${mm}${dd}`;
+
+            const start = startOfDay(Date.now());
+            const end = endOfDay(Date.now());
+
+            const q = query(collection(db, "bills"), where("timestamp", ">=", start), where("timestamp", "<=", end));
+            const snap = await getDocs(q);
+            const count = snap.size + 1;
+
+            const suffix = String(count).padStart(3, '0');
+            return `B-${dateStr}-${suffix}`;
+        }
 
 
         // ============================================
