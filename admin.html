@@ -6,7 +6,79 @@
     <title>Chef Cafe – Admin Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
+        /* Dashboard & Nav Styles */
+        .admin-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: none;
+            background: #f3f4f6;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        .dash-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
+        }
+
+        .dash-card h3 {
+            margin-bottom: 16px;
+            font-size: 18px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        #todaySoldList {
+            list-style: none;
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #todaySoldList li {
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        #todaySoldList li:last-child {
+            border-bottom: none;
+        }
+
+        /* Utility */
+        .hidden {
+            display: none !important;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -90,6 +162,96 @@
 
         #loginBox button:active {
             transform: translateY(0);
+        }
+
+        /* Billing & Bills Styles */
+        .bill-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
+            margin-bottom: 20px;
+        }
+
+        .bill-card h3 {
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .bill-grid {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: 1fr 2fr 1fr auto;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        #billList {
+            list-style: none;
+            margin: 20px 0;
+            border-top: 2px dashed #eee;
+            border-bottom: 2px dashed #eee;
+            padding: 10px 0;
+        }
+
+        #billList li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f9f9f9;
+        }
+
+        #payBill {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* Bills History Styles */
+        .bill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .history-card {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bill-info h4 {
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .bill-meta {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .print-btn {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .print-btn:hover {
+            background: #e5e7eb;
+        }
+
+        @media (max-width: 768px) {
+            .bill-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Admin Dashboard */
@@ -473,55 +635,136 @@
         <header class="admin-header">
             <div class="header-left">
                 <h1>🍽️ Chef Cafe Dashboard</h1>
-                <p>Manage your menu items efficiently</p>
+                <p>Manage your business efficiently</p>
             </div>
             <div class="header-right">
                 <button id="logoutBtn">Logout</button>
             </div>
         </header>
 
-        <section class="add-item-card">
-            <h3>➕ Add New Menu Item</h3>
+        <!-- NAVIGATION -->
+        <nav class="admin-nav">
+            <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
+            <button class="nav-btn" data-page="menu">🍽️ Menu</button>
+            <button class="nav-btn" data-page="billing">🧾 Billing</button>
+            <button class="nav-btn" data-page="bills">📂 Bills</button>
+        </nav>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="name">Item Name</label>
-                    <input id="name" placeholder="e.g., Chicken Biryani">
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard">
+            <div class="dashboard-grid">
+                <!-- GRAPH CARD -->
+                <div class="dash-card">
+                    <h3>📈 Activity (Last 7 Days)</h3>
+                    <canvas id="activityChart" height="200"></canvas>
                 </div>
 
-                <div class="form-group">
-                    <label for="price">Price</label>
-                    <input id="price" type="text" placeholder="₹100 / As Per Size">
-                </div>
-
-                <div class="form-group">
-                    <label for="category">Category</label>
-                    <select id="category">
-                        <option value="soup">Soup</option>
-                        <option value="salads">Salads</option>
-                        <option value="starter">Starter</option>
-                        <option value="maincourses">Main Courses</option>
-                        <option value="chefspecial">Chef Special</option>
-                        <option value="asianmain">Asian Main Courses</option>
-                        <option value="asiannonveg">Asian Non Veg</option>
-                        <option value="asianveg">Asian Veg</option>
-                        <option value="kerala">Kerala Style</option>
-                        <option value="bread">Bread</option>
-                        <option value="grill">Grill Items</option>
-                        <option value="crispy">Crispy Bookzz</option>
-                        <option value="beverages">Beverages</option>
-                        <option value="cafespecials">Cafe Specials</option>
-                    </select>
+                <!-- TODAY SOLD -->
+                <div class="dash-card">
+                    <h3>🧾 Today Sold Items</h3>
+                    <ul id="todaySoldList">
+                        <li style="text-align:center; color:#999; padding:20px;">Loading...</li>
+                    </ul>
                 </div>
             </div>
-
-            <button id="addItemBtn">Add Item to Menu</button>
         </section>
 
-        <section class="items-section">
-            <h3>📋 Menu Items</h3>
-            <div class="items-list" id="items">
-                <!-- Items rendered here -->
+        <!-- MENU SECTION -->
+        <section id="menu" style="display:none">
+
+            <section class="add-item-card">
+                <h3>➕ Add New Menu Item</h3>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="name">Item Name</label>
+                        <input id="name" placeholder="e.g., Chicken Biryani">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price</label>
+                        <input id="price" type="text" placeholder="₹100 / As Per Size">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category">
+                            <option value="soup">Soup</option>
+                            <option value="salads">Salads</option>
+                            <option value="starter">Starter</option>
+                            <option value="maincourses">Main Courses</option>
+                            <option value="chefspecial">Chef Special</option>
+                            <option value="asianmain">Asian Main Courses</option>
+                            <option value="asiannonveg">Asian Non Veg</option>
+                            <option value="asianveg">Asian Veg</option>
+                            <option value="kerala">Kerala Style</option>
+                            <option value="bread">Bread</option>
+                            <option value="grill">Grill Items</option>
+                            <option value="crispy">Crispy Bookzz</option>
+                            <option value="beverages">Beverages</option>
+                            <option value="cafespecials">Cafe Specials</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="addItemBtn">Add Item to Menu</button>
+            </section>
+
+            <section class="items-section">
+                <h3>📋 Menu Items</h3>
+                <div class="items-list" id="items">
+                    <!-- Items rendered here -->
+                </div>
+            </section>
+        </section>
+
+        <!-- BILLING SECTION -->
+        <section id="billing" style="display:none">
+            <div class="bill-card">
+                <h3>🧾 New Bill</h3>
+
+                <div class="form-grid bill-grid">
+                    <div class="form-group">
+                        <label>Table No</label>
+                        <input type="number" id="tableNo" min="1" placeholder="Type..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Item</label>
+                        <select id="billItem"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Qty</label>
+                        <input type="number" id="billQty" min="1" value="1">
+                    </div>
+
+                    <button id="addToBill" style="padding:12px; margin-top:0;">➕ Add</button>
+                </div>
+
+                <ul id="billList">
+                    <!-- Bill items go here -->
+                </ul>
+
+                <h4 style="text-align:right; margin-bottom:15px; font-size:18px;">Total Items: <span
+                        id="totalItems">0</span></h4>
+
+                <button id="payBill">💳 PAY & PRINT</button>
+            </div>
+        </section>
+
+        <!-- BILLS HISTORY SECTION -->
+        <section id="bills" style="display:none">
+            <div class="bill-header">
+                <h3 style="color:#fff">📂 Bills History</h3>
+                <select id="billFilter" style="padding:8px; border-radius:8px;">
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="7days" selected>Last 7 Days</option>
+                </select>
+            </div>
+            <div id="billsList">
+                <!-- Bills go here -->
             </div>
         </section>
 
@@ -543,8 +786,16 @@
             addDoc,
             updateDoc,
             deleteDoc,
+            updateDoc,
+            deleteDoc,
             doc,
-            onSnapshot
+            getDoc,
+            setDoc,
+            increment,
+            onSnapshot,
+            query,
+            where,
+            orderBy
         } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
         // ============================================
@@ -1057,8 +1308,15 @@
                 loginBox.style.display = "none";
                 adminPanel.style.display = "block";
 
-                // Load menu items
-                loadItems();
+                // Load initial data
+                loadItems();            // Existing Menu Items
+                loadDashboardGraph();   // Dashboard
+                loadTodaySoldItems();   // Dashboard
+                loadBillingItems();     // Billing Dropdown
+                loadBills('7days');     // Bills History
+
+                // Show default page
+                showPage('dashboard');
 
                 console.log('✅ User authenticated:', user.email);
             } else {
@@ -1124,6 +1382,441 @@
                 showNotification(error.message, "error");
             });
         }
+
+        // ============================================
+        // DASHBOARD LOGIC (PHASE 3-A)
+        // ============================================
+
+        const todayDate = new Date().toISOString().split("T")[0];
+        const now = Date.now();
+        const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
+
+        /**
+         * Load Activity Graph (Last 7 Days)
+         */
+        function loadDashboardGraph() {
+            const q = query(
+                collection(db, "daily_sales"),
+                where("lastUpdated", ">=", sevenDaysAgo),
+                orderBy("lastUpdated", "asc")
+            );
+
+            onSnapshot(q, (snapshot) => {
+                const graphData = [];
+                snapshot.forEach(docSnap => {
+                    const d = docSnap.data();
+                    graphData.push({
+                        date: d.date,
+                        totalItems: d.totalItems || 0
+                    });
+                });
+
+                console.log("📊 Graph data:", graphData);
+                renderGraph(graphData);
+            });
+        }
+
+        /**
+         * Render Chart.js Graph
+         */
+        let activityChart;
+        function renderGraph(graphData) {
+            const ctx = document.getElementById("activityChart");
+            if (!ctx) return;
+
+            const labels = graphData.map(d => d.date);
+            const values = graphData.map(d => d.totalItems);
+
+            if (activityChart) activityChart.destroy();
+
+            activityChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [{
+                        label: "Items Sold",
+                        data: values,
+                        borderColor: "#667eea",
+                        backgroundColor: "rgba(102,126,234,0.15)",
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        /**
+         * Load Today's Sold Items
+         */
+        function loadTodaySoldItems() {
+            const q = query(
+                collection(db, "today_items"),
+                where("date", "==", todayDate)
+            );
+
+            onSnapshot(q, (snapshot) => {
+                const todayList = [];
+                snapshot.forEach(docSnap => {
+                    todayList.push(docSnap.data());
+                });
+
+                // Sort: Highest qty first
+                todayList.sort((a, b) => b.qty - a.qty);
+
+                console.log("📋 Today sold:", todayList);
+                renderTodayList(todayList);
+            });
+        }
+
+        /**
+         * Render Today's List
+         */
+        function renderTodayList(items) {
+            const list = document.getElementById("todaySoldList");
+            if (!list) return;
+
+            list.innerHTML = "";
+
+            if (items.length === 0) {
+                list.innerHTML = "<li style='padding:15px;text-align:center;color:#999'>No sales today yet.</li>";
+                return;
+            }
+
+            items.forEach(item => {
+                list.innerHTML += `
+                    <li style="display:flex;justify-content:space-between;padding:12px 0;">
+                        <span>${item.name}</span>
+                        <strong style="color:#667eea">${item.qty}</strong>
+                    </li>
+                `;
+            });
+        }
+
+        // ============================================
+        // NAVIGATION LOGIC (PHASE 3-D)
+        // ============================================
+
+        const pages = ["dashboard", "menu", "billing", "bills"];
+        const navButtons = document.querySelectorAll(".nav-btn");
+
+        function showPage(page) {
+            pages.forEach(p => {
+                const el = document.getElementById(p);
+                if (el) el.style.display = p === page ? "block" : "none";
+            });
+
+            navButtons.forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.page === page);
+            });
+        }
+
+        // Add Click Handlers
+        navButtons.forEach(btn => {
+            btn.onclick = () => showPage(btn.dataset.page);
+        });
+
+        // ============================================
+        // BILLING LOGIC (PHASE 3-B)
+        // ============================================
+
+        let currentBill = [];
+
+        /**
+         * Load items into billing select
+         */
+        function loadBillingItems() {
+            onSnapshot(collection(db, "menu_items"), snapshot => {
+                const select = document.getElementById("billItem");
+                if (!select) return;
+
+                select.innerHTML = "";
+                snapshot.forEach(docSnap => {
+                    const item = docSnap.data();
+                    select.innerHTML += `<option value="${item.name}">${item.name}</option>`;
+                });
+            });
+        }
+
+        /**
+         * Add Item to Bill
+         */
+        document.getElementById("addToBill").onclick = () => {
+            const select = document.getElementById("billItem");
+            const qtyInput = document.getElementById("billQty");
+
+            const name = select.value;
+            const qty = Number(qtyInput.value);
+
+            if (!name) return;
+
+            const existing = currentBill.find(i => i.name === name);
+            if (existing) existing.qty += qty;
+            else currentBill.push({ name, qty });
+
+            // Reset qty
+            qtyInput.value = 1;
+
+            renderBill();
+        };
+
+        /**
+         * Render Current Bill
+         */
+        function renderBill() {
+            const list = document.getElementById("billList");
+            const total = document.getElementById("totalItems");
+
+            list.innerHTML = "";
+            let sum = 0;
+
+            currentBill.forEach((item, i) => {
+                sum += item.qty;
+                list.innerHTML += `
+                <li>
+                    <span>${item.name} <small style="color:#666">x ${item.qty}</small></span>
+                    <button onclick="window.removeBillItem(${i})" style="background:none; border:none; color:red; cursor:pointer;">❌</button>
+                </li>
+                `;
+            });
+
+            total.textContent = sum;
+        }
+
+        /**
+         * Remove Item from Bill
+         */
+        window.removeBillItem = (index) => {
+            currentBill.splice(index, 1);
+            renderBill();
+        }
+
+        /**
+         * Generate Unique Bill No
+         */
+        function generateBillNo() {
+            const d = new Date();
+            return `B-${d.getFullYear()}${d.getMonth() + 1}${d.getDate()}-${Date.now().toString().slice(-4)}`;
+        }
+
+        /**
+         * UPDATE DASHBOARD (PHASE 3-A1)
+         */
+        async function updateDashboardAfterPayment(bill) {
+            const dayRef = doc(db, "daily_sales", bill.date);
+
+            // 1️⃣ Update DAILY SALES
+            const totalQty = bill.items.reduce((sum, item) => sum + item.qty, 0);
+
+            await setDoc(
+                dayRef,
+                {
+                    date: bill.date,
+                    totalItems: increment(totalQty),
+                    lastUpdated: Date.now()
+                },
+                { merge: true }
+            );
+
+            // 2️⃣ Update TODAY ITEMS
+            for (const item of bill.items) {
+                // Creates a safe ID replacing spaces
+                const safeId = item.name.replace(/\s+/g, "_");
+                const itemRef = doc(db, "today_items", safeId);
+
+                await setDoc(
+                    itemRef,
+                    {
+                        name: item.name,
+                        qty: increment(item.qty),
+                        date: bill.date
+                    },
+                    { merge: true }
+                );
+            }
+        }
+
+        /**
+         * PAY & PRINT
+         */
+        document.getElementById("payBill").onclick = async () => {
+            const tableNo = document.getElementById("tableNo").value;
+
+            if (!tableNo) {
+                showNotification("Please enter Table Number", "error");
+                return;
+            }
+            if (currentBill.length === 0) {
+                showNotification("Bill is empty", "error");
+                return;
+            }
+
+            if (!confirm("Confirm Payment & Print?")) return;
+
+            setButtonLoading(document.getElementById("payBill"), true, "💳 PAY & PRINT");
+
+            try {
+                const bill = {
+                    billNo: generateBillNo(),
+                    tableNo: Number(tableNo),
+                    date: todayDate,
+                    timestamp: Date.now(),
+                    items: currentBill,
+                    total: currentBill.reduce((s, i) => s + i.qty, 0),
+                    status: "PAID"
+                };
+
+                // 1. Save Bill
+                await addDoc(collection(db, "bills"), bill);
+
+                // 2. Update Dashboard Stats
+                await updateDashboardAfterPayment(bill);
+
+                showNotification("✅ Bill PAID!", "success");
+
+                // 3. Print
+                window.print();
+
+                // 4. Reset
+                currentBill = [];
+                renderBill();
+                document.getElementById("tableNo").value = "";
+
+            } catch (err) {
+                console.error(err);
+                showNotification("Error: " + err.message, "error");
+            } finally {
+                setButtonLoading(document.getElementById("payBill"), false, "💳 PAY & PRINT");
+            }
+        };
+
+        // ============================================
+        // BILLS HISTORY (PHASE 3-C & 3-H)
+        // ============================================
+
+        // const sevenDaysAgo is already defined in Dashboard Logic
+        let allBills = []; // Cache for client-side filtering
+
+        function loadBills(filter = '7days') {
+            // Initial Load (Realtime)
+            if (allBills.length === 0) {
+                const billsRef = collection(db, "bills");
+                const q = query(
+                    billsRef,
+                    where("timestamp", ">=", sevenDaysAgo),
+                    orderBy("timestamp", "desc")
+                );
+
+                onSnapshot(q, snapshot => {
+                    allBills = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderBills(filter);
+                });
+            } else {
+                // Just filter existing data
+                renderBills(filter);
+            }
+        }
+
+        // Render with Filter
+        function renderBills(filter) {
+            const container = document.getElementById("billsList");
+            if (!container) return;
+
+            container.innerHTML = "";
+
+            const filtered = allBills.filter(bill => {
+                if (filter === "today") return isToday(bill.date);
+                if (filter === "yesterday") return isYesterday(bill.date);
+                return true; // 7days (default)
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = "<p style='color:#fff; text-align:center; padding:20px;'>No bills found.</p>";
+                return;
+            }
+
+            filtered.forEach(b => {
+                const totalItems = b.items ? b.items.reduce((s, i) => s + i.qty, 0) : 0;
+
+                container.innerHTML += `
+                    <div class="history-card">
+                        <div class="bill-info">
+                            <h4>#${b.billNo}</h4>
+                            <div class="bill-meta">
+                                Table ${b.tableNo} • ${b.date}
+                            </div>
+                        </div>
+                        <div class="bill-actions">
+                            <span style="font-weight:bold; margin-right:15px;">${totalItems} items</span>
+                            <span class="status-tag" style="background:${b.status === 'PAID' ? '#d1fae5' : '#fee2e2'}; color:${b.status === 'PAID' ? '#047857' : '#b91c1c'}; padding:4px 8px; border-radius:4px; font-size:12px; margin-right:8px;">${b.status}</span>
+                            <button class="print-btn" onclick="window.reprintBill('${b.id}')">🖨 Print</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Helpers
+        function isToday(dateStr) {
+            const today = new Date().toISOString().split("T")[0];
+            return dateStr === today;
+        }
+
+        function isYesterday(dateStr) {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            return dateStr === d.toISOString().split("T")[0];
+        }
+
+        // Filter Change
+        document.getElementById("billFilter").onchange = (e) => {
+            renderBills(e.target.value);
+        };
+
+        // Reprint
+        window.reprintBill = async (id) => {
+            try {
+                const docRef = doc(db, "bills", id);
+                const snap = await getDoc(docRef);
+                if (!snap.exists()) return;
+
+                const bill = snap.data();
+
+                let printContent = `
+CHEFS CAFE - BILL COPY
+Bill No: ${bill.billNo}
+Table: ${bill.tableNo}
+Date: ${bill.date}
+------------------------
+`;
+                bill.items.forEach(i => {
+                    printContent += `${i.name} x ${i.qty}\n`;
+                });
+                printContent += `------------------------
+Total Qty: ${bill.total}
+Status: RE-PRINT
+`;
+
+                const win = window.open("", "", "width=300,height=600");
+                win.document.write(`<pre style="font-family:monospace">${printContent}</pre>`);
+                win.document.close();
+                win.focus();
+                win.print();
+                win.close();
+            } catch (e) {
+                console.error(e);
+                alert("Error printing");
+            }
+        };
 
         // ============================================
         // INITIALIZATION COMPLETE
