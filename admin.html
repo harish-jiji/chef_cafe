@@ -724,34 +724,59 @@
         <section id="billing" style="display:none">
             <h2>🧾 Billing</h2>
 
-            <div class="billing-top" style="display:flex; gap:10px; margin-bottom:20px; align-items:center;">
-                <label>Table No</label>
-                <input type="number" id="tableNoInput" min="1" placeholder="Enter table number"
-                    style="padding:10px; border-radius:8px; border:1px solid #ccc;">
-                <button id="startBillingBtn"
-                    style="padding:10px 20px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer;">Start
-                    Billing</button>
-            </div>
+            <div class="billing-container"
+                style="display:grid; grid-template-columns: 1fr 2fr; gap:20px; align-items:start;">
 
-            <div class="billing-body" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                <!-- Left: Menu Grid -->
-                <div>
-                    <h3>Menu</h3>
-                    <div class="menu-list" id="billingMenu"
-                        style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; max-height:500px; overflow-y:auto;">
+                <!-- LEFT: INPUTS -->
+                <div class="billing-inputs"
+                    style="background:#f8f9fa; padding:20px; border-radius:12px; border:1px solid #e5e7eb;">
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:600;">Table Number</label>
+                        <input type="number" id="tableInput" placeholder="Enter Table No"
+                            style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
                     </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:600;">Select Item</label>
+                        <select id="billItemSelect"
+                            style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                            <option value="">Loading menu...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:600;">Quantity</label>
+                        <input type="number" id="billQty" value="1" min="1"
+                            style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                    </div>
+
+                    <button onclick="addToBill()"
+                        style="width:100%; padding:12px; background:#667eea; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
+                        Add to Bill
+                    </button>
                 </div>
 
-                <!-- Right: Bill Preview -->
+                <!-- RIGHT: LIVE BILL -->
                 <div class="bill-preview"
-                    style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,.1);">
-                    <h3 id="billTitle">No Bill</h3>
-                    <div id="billItems" style="min-height:200px; margin:20px 0;"></div>
-                    <hr>
-                    <h3>Total: ₹<span id="billTotal">0</span></h3>
-                    <button id="printBtn" disabled
-                        style="width:100%; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; cursor:pointer; font-size:16px; margin-top:20px;">Print
-                        Bill</button>
+                    style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,.05); border:1px solid #eee;">
+                    <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">Current Bill</h3>
+
+                    <div id="billItems"
+                        style="min-height:300px; max-height:500px; overflow-y:auto; margin-bottom:20px;">
+                        <!-- JS renders rows here -->
+                        <p style="color:#999; text-align:center; padding-top:50px;">No items added</p>
+                    </div>
+
+                    <div
+                        style="border-top:2px solid #333; padding-top:15px; display:flex; justify-content:space-between; font-size:1.5em; font-weight:bold;">
+                        <span>Grand Total:</span>
+                        <span>₹<span id="billTotal">0</span></span>
+                    </div>
+
+                    <button onclick="printBill()"
+                        style="width:100%; margin-top:20px; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; cursor:pointer; font-size:1.2em; font-weight:bold;">
+                        🖨 Print & Save Bill
+                    </button>
                 </div>
             </div>
         </section>
@@ -1562,11 +1587,134 @@
         });
 
         // ============================================
-        // BILLING LOGIC (PHASES 4.2 & 4.3)
+        // BILLING LOGIC (USER REFINED)
         // ============================================
 
-        let currentBill = null;
-        let currentBillId = null;
+        let billItems = [];
+        let menuMap = {}; // name -> price
+
+        /**
+         * 1. Load Menu for Dropdown
+         * Parses price string "140 / 170" -> 140
+         */
+        function loadBillingItems() {
+            onSnapshot(collection(db, "menu_items"), snap => {
+                const select = document.getElementById("billItemSelect");
+                if (!select) return;
+
+                select.innerHTML = "<option value=''>Select item</option>";
+                menuMap = {};
+
+                snap.forEach(docSnap => {
+                    const item = docSnap.data();
+                    // Parse base price from string (e.g. "140 / 180" -> 140)
+                    const basePrice = parseInt(item.price);
+
+                    if (!isNaN(basePrice)) {
+                        menuMap[item.name] = basePrice;
+                        select.innerHTML += `
+                            <option value="${item.name}">
+                                ${item.name} – ₹${basePrice}
+                            </option>
+                        `;
+                    }
+                });
+            });
+        }
+
+        /**
+         * 2. Add Item to Bill
+         */
+        window.addToBill = () => {
+            const select = document.getElementById("billItemSelect");
+            const qtyInput = document.getElementById("billQty");
+            const tableInput = document.getElementById("tableInput");
+
+            const name = select.value;
+            const qty = parseInt(qtyInput.value);
+
+            if (!tableInput.value) {
+                showNotification("Please enter Table Number first", "error");
+                return;
+            }
+            if (!name || qty <= 0) {
+                showNotification("Select item & valid quantity", "error");
+                return;
+            }
+
+            const price = menuMap[name];
+            const existing = billItems.find(i => i.name === name);
+
+            if (existing) {
+                existing.qty += qty;
+                existing.total = existing.qty * existing.price;
+            } else {
+                billItems.push({
+                    name,
+                    price,
+                    qty,
+                    total: price * qty
+                });
+            }
+
+            renderBill();
+            qtyInput.value = 1; // Reset qty
+        };
+
+        /**
+         * 3. Change Quantity (+/-)
+         */
+        window.changeQty = (name, delta) => {
+            const item = billItems.find(i => i.name === name);
+            if (!item) return;
+
+            item.qty += delta;
+
+            if (item.qty <= 0) {
+                billItems = billItems.filter(i => i.name !== name);
+            } else {
+                item.total = item.qty * item.price;
+            }
+
+            renderBill();
+        };
+
+        /**
+         * 4. Render Bill & Total
+         */
+        function renderBill() {
+            const billBox = document.getElementById("billItems");
+            const totalEl = document.getElementById("billTotal");
+
+            if (!billBox) return;
+
+            let total = 0;
+            billBox.innerHTML = "";
+
+            if (billItems.length === 0) {
+                billBox.innerHTML = "<p style='color:#999; text-align:center; padding-top:50px;'>No items added</p>";
+                totalEl.innerText = "0";
+                return;
+            }
+
+            billItems.forEach(i => {
+                total += i.total;
+
+                billBox.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed #eee;">
+                        <span style="font-weight:600; flex:2;">${i.name}</span>
+                        <div style="flex:1; text-align:center;">
+                             <button onclick="changeQty('${i.name}', -1)" style="padding:2px 8px; cursor:pointer; background:#fee2e2; color:#b91c1c; border:none; border-radius:4px;">−</button>
+                             <span style="padding:0 10px;">${i.qty}</span>
+                             <button onclick="changeQty('${i.name}', 1)" style="padding:2px 8px; cursor:pointer; background:#d1fae5; color:#047857; border:none; border-radius:4px;">+</button>
+                        </div>
+                        <span style="flex:1; text-align:right;">₹${i.total}</span>
+                    </div>
+                `;
+            });
+
+            totalEl.innerText = total;
+        }
 
         // Bill Number Generator (B-YYYYMMDD-XXX)
         async function generateBillNo() {
@@ -1588,11 +1736,17 @@
             return `B-${dateStr}-${suffix}`;
         }
 
-        // 1. Start Billing (Lock Table)
-        window.startBilling = async () => {
-            const tableNoInput = document.getElementById("tableNoInput");
-            const tableNo = Number(tableNoInput.value);
-            const btn = document.getElementById("startBillingBtn");
+        /**
+         * 5. Print & Save Bill
+         */
+        window.printBill = async () => {
+            if (billItems.length === 0) {
+                showNotification("No items in bill", "error");
+                return;
+            }
+
+            const tableInput = document.getElementById("tableInput");
+            const tableNo = tableInput.value;
 
             if (!tableNo) {
                 showNotification("Please enter a table number", "error");
