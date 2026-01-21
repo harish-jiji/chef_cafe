@@ -1356,6 +1356,89 @@
          * Monitor authentication state changes
          * Shows/hides appropriate UI based on login status
          */
+        // ===== DASHBOARD GRAPH (SAFE STUB) =====
+        let salesChart = null;
+
+        window.loadDashboardGraph = async function () {
+            try {
+                const ctx = document.getElementById("salesChart");
+                if (!ctx) return;
+
+                // Last 7 days
+                const today = new Date();
+                const start = new Date();
+                start.setDate(today.getDate() - 6);
+                start.setHours(0, 0, 0, 0);
+
+                const q = query(
+                    collection(db, "bills"),
+                    where("status", "==", "PAID"),
+                    where("timestamp", ">=", start.getTime()),
+                    orderBy("timestamp", "asc")
+                );
+
+                const snap = await getDocs(q);
+
+                // Prepare 7-day map
+                const dayMap = {};
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date();
+                    d.setDate(today.getDate() - i);
+                    const key = d.toISOString().split("T")[0];
+                    dayMap[key] = 0;
+                }
+
+                snap.forEach(doc => {
+                    const bill = doc.data();
+                    const dateKey = new Date(bill.timestamp).toISOString().split("T")[0];
+
+                    if (dayMap[dateKey] !== undefined) {
+                        bill.items.forEach(item => {
+                            dayMap[dateKey] += Number(item.qty || 0);
+                        });
+                    }
+                });
+
+                const labels = Object.keys(dayMap).sort(); // Sort chronological
+                const data = labels.map(k => dayMap[k]);
+
+                if (salesChart) salesChart.destroy();
+
+                salesChart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: "Items Sold",
+                            data,
+                            borderColor: "#f97316",
+                            backgroundColor: "rgba(249,115,22,0.2)",
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1 }
+                            }
+                        }
+                    }
+                });
+
+                console.log("📊 Dashboard graph loaded");
+
+            } catch (err) {
+                console.error("Dashboard graph error:", err);
+            }
+        };
+
         onAuthStateChanged(auth, user => {
             if (user) {
                 // Logged in
@@ -1755,7 +1838,8 @@
                 return;
             }
 
-            setButtonLoading(btn, true, "Start Billing");
+            const btn = document.getElementById("printBtn");
+            if (btn) setButtonLoading(btn, true, "Start Billing");
 
             try {
                 // Check for existing OPEN bill
@@ -1802,7 +1886,8 @@
                 console.error(e);
                 showNotification("Error starting bill: " + e.message, "error");
             } finally {
-                setButtonLoading(btn, false, "Start Billing");
+                const btn = document.getElementById("printBtn");
+                if (btn) setButtonLoading(btn, false, "Start Billing");
             }
         };
 
