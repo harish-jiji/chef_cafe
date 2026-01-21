@@ -635,6 +635,53 @@
             display: none;
         }
 
+        /* BILLING LAYOUT (MOBILE FIRST) */
+        .billing-container {
+            display: grid;
+            gap: 16px;
+        }
+
+        .input-row {
+            display: grid;
+            gap: 10px;
+        }
+
+        /* MOBILE STYLES (Default) */
+        @media (max-width: 768px) {
+            .billing-container {
+                grid-template-columns: 1fr;
+            }
+
+            .billing-form,
+            .billing-bill {
+                width: 100%;
+                padding: 15px !important;
+            }
+
+            .billing-form input,
+            .billing-form button,
+            .billing-bill button {
+                width: 100%;
+                font-size: 16px;
+            }
+
+            #billTotal {
+                font-size: 20px;
+            }
+        }
+
+        /* TABLET & DESKTOP STYLES */
+        @media (min-width: 769px) {
+            .billing-container {
+                grid-template-columns: 320px 1fr;
+                align-items: start;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         .nav-link {
             font-weight: 500;
         }
@@ -711,7 +758,7 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                         <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showPage('dashboard')">
+                            <a class="nav-link" href="dashboard.html" target="_blank">
                                 📊 Dashboard
                             </a>
                         </li>
@@ -825,11 +872,10 @@
         <div id="billing" class="admin-section" style="display:none">
             <h2>🧾 Billing</h2>
 
-            <div class="billing-container"
-                style="display:grid; grid-template-columns: 1fr 2fr; gap:20px; align-items:start;">
+            <div class="billing-container">
 
                 <!-- LEFT: INPUTS -->
-                <div class="billing-inputs"
+                <div class="billing-form"
                     style="background:#f8f9fa; padding:20px; border-radius:12px; border:1px solid #e5e7eb;">
                     <div class="form-group" style="margin-bottom:15px;">
                         <label style="display:block; margin-bottom:5px; font-weight:600;">Table Number</label>
@@ -843,8 +889,8 @@
                         <div id="itemDropdown" class="dropdown hidden"></div>
                     </div>
 
-                    <div class="form-group" style="margin-bottom:15px; display:flex; gap:10px;">
-                        <div style="flex:1">
+                    <div class="form-group input-row" style="margin-bottom:15px;">
+                        <div>
                             <label style="display:block; margin-bottom:5px; font-weight:600;">Price</label>
                             <input type="text" id="priceInput" placeholder="Price"
                                 style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
@@ -858,7 +904,7 @@
                                     style="width:100%; padding:5px; border:1px solid #ddd; border-radius:4px; margin-top:2px;">
                             </div>
                         </div>
-                        <div style="flex:1">
+                        <div>
                             <label style="display:block; margin-bottom:5px; font-weight:600;">Qty</label>
                             <input type="number" id="qtyInput" value="1" min="1"
                                 style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
@@ -872,7 +918,7 @@
                 </div>
 
                 <!-- RIGHT: LIVE BILL -->
-                <div class="bill-preview"
+                <div class="billing-bill"
                     style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,.05); border:1px solid #eee;">
                     <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">Current Bill
                     </h3>
@@ -886,11 +932,11 @@
                     <div
                         style="border-top:2px solid #333; padding-top:15px; display:flex; justify-content:space-between; font-size:1.5em; font-weight:bold;">
                         <span>Grand Total:</span>
-                        <span><span id="billTotal">₹0</span></span>
+                        <span><span id="billTotal" class="grand-total">₹0</span></span>
                     </div>
 
                     <div style="display:flex; gap:10px; margin-top:20px;">
-                        <button onclick="saveBillOnly()"
+                        <button onclick="saveBillOnly()" class="save-btn"
                             style="flex:1; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:1.1em;">
                             ✅ Save & Preview
                         </button>
@@ -1646,125 +1692,9 @@
             });
         }
 
-        // ============================================
-        // DASHBOARD LOGIC (PHASE 6)
-        // ============================================
 
-        function startOfDay(ts) {
-            const d = new Date(ts);
-            d.setHours(0, 0, 0, 0);
-            return d.getTime();
-        }
 
-        function endOfDay(ts) {
-            const d = new Date(ts);
-            d.setHours(23, 59, 59, 999);
-            return d.getTime();
-        }
 
-        async function loadDashboard() {
-            const now = Date.now();
-            const start = startOfDay(now);
-            const end = endOfDay(now);
-
-            // Query only PAID bills for today
-            const q = query(
-                collection(db, "bills"),
-                where("timestamp", ">=", start),
-                where("timestamp", "<=", end),
-                where("status", "==", "PAID")
-            );
-
-            onSnapshot(q, snapshot => {
-                let billCount = snapshot.size;
-                let totalItemsCount = 0;
-                let itemMap = {};
-                let dayMap = {};
-
-                snapshot.forEach(docSnap => {
-                    const bill = docSnap.data();
-                    if (bill.items) {
-                        bill.items.forEach(i => {
-                            totalItemsCount += i.qty;
-                            itemMap[i.name] = (itemMap[i.name] || 0) + i.qty;
-                        });
-
-                        // Populate dayMap
-                        const dateKey = new Date(bill.timestamp).toISOString().split("T")[0];
-                        if (!dayMap[dateKey]) dayMap[dateKey] = 0;
-                        bill.items.forEach(item => {
-                            dayMap[dateKey] += item.qty;
-                        });
-                    }
-                });
-
-                // Update Widgets
-                const billsTodayEl = document.getElementById("billsToday");
-                const itemsTodayEl = document.getElementById("itemsToday");
-
-                if (billsTodayEl) billsTodayEl.innerText = billCount;
-                if (itemsTodayEl) itemsTodayEl.innerText = totalItemsCount;
-
-                // Top Items
-                const topItemsDiv = document.getElementById("topItems");
-                if (topItemsDiv) {
-                    topItemsDiv.innerHTML = "";
-                    Object.entries(itemMap)
-                        .sort((a, b) => b[1] - a[1])
-                        .slice(0, 5)
-                        .forEach(([name, qty]) => {
-                            topItemsDiv.innerHTML += `
-                                <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee;">
-                                    <span>${name}</span>
-                                    <strong>${qty}</strong>
-                                </div>
-                            `;
-                        });
-
-                    const labels = Object.keys(dayMap).sort();
-                    const data = labels.map(k => dayMap[k]);
-
-                    // Destroy old chart if exists
-                    if (salesChartInstance) {
-                        salesChartInstance.destroy();
-                    }
-
-                    salesChartInstance = new Chart(ctx, {
-                        type: "line",
-                        data: {
-                            labels,
-                            datasets: [{
-                                label: "Items Sold",
-                                data,
-                                borderColor: "#10b981",
-                                backgroundColor: "rgba(16,185,129,0.15)",
-                                tension: 0.3,
-                                fill: true,
-                                pointRadius: 5
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: { stepSize: 1 }
-                                }
-                            }
-                        }
-                    });
-                }
-            }, (error) => {
-                console.error("Dashboard graph error:", error);
-                // If index missing, it will log here
-                if (error.code === 'failed-precondition') {
-                    console.warn("Missing Index URL:", error.message);
-                }
-            });
-        }
 
         // ============================================
         // NAVIGATION LOGIC (BOOTSTRAP)
@@ -2259,7 +2189,7 @@
             win.close();
         };
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
