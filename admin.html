@@ -810,8 +810,17 @@
                     <div class="form-group" style="margin-bottom:15px; display:flex; gap:10px;">
                         <div style="flex:1">
                             <label style="display:block; margin-bottom:5px; font-weight:600;">Price</label>
-                            <input type="number" id="priceInput" placeholder="Price"
+                            <input type="text" id="priceInput" placeholder="Price"
                                 style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+
+                            <!-- Manual Price Box (Conditional) -->
+                            <div id="manualPriceBox"
+                                style="display:none; margin-top:6px; background:#fff8e1; padding:5px; border-radius:4px; border:1px solid #ffebb0;">
+                                <label style="font-size:11px; display:block; color:#856404; font-weight:bold;">Enter
+                                    Final Price</label>
+                                <input type="number" id="finalPriceInput" placeholder="e.g. 150"
+                                    style="width:100%; padding:5px; border:1px solid #ddd; border-radius:4px; margin-top:2px;">
+                            </div>
                         </div>
                         <div style="flex:1">
                             <label style="display:block; margin-bottom:5px; font-weight:600;">Qty</label>
@@ -845,13 +854,9 @@
                     </div>
 
                     <div style="display:flex; gap:10px; margin-top:20px;">
-                        <button onclick="saveOnly()"
-                            style="flex:1; padding:15px; background:#667eea; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
-                            💾 Save Only
-                        </button>
-                        <button onclick="saveAndPrint()"
-                            style="flex:1; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
-                            🖨 Save & Print
+                        <button onclick="saveBillOnly()"
+                            style="flex:1; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:1.1em;">
+                            ✅ Save & Preview
                         </button>
                     </div>
                 </div>
@@ -1754,7 +1759,12 @@
 
         let menuMap = {};
 
-        // A. Load Menu for Search
+        // Helper to check numeric price
+        function isNumericPrice(price) {
+            return !isNaN(Number(price)) && price !== "";
+        }
+
+        // 1. Load Menu & Setup Auto-Fill
         function loadMenuForBilling() {
             onSnapshot(collection(db, "menu_items"), snap => {
                 const list = document.getElementById("menuItemsList");
@@ -1779,10 +1789,22 @@
                 searchInput.addEventListener("input", () => {
                     const name = searchInput.value;
                     const priceInput = document.getElementById("priceInput");
+                    const manualBox = document.getElementById("manualPriceBox");
 
                     if (menuMap[name]) {
-                        // If price is missing or null, show empty string
-                        priceInput.value = menuMap[name].price ?? "";
+                        const price = menuMap[name].price;
+                        priceInput.value = price;
+
+                        // Check if pure number
+                        if (isNumericPrice(price)) {
+                            manualBox.style.display = "none";
+                        } else {
+                            manualBox.style.display = "block";
+                            document.getElementById("finalPriceInput").value = "";
+                        }
+                    } else {
+                        // Custom item or not found
+                        manualBox.style.display = "none";
                     }
                 });
             }
@@ -1794,14 +1816,27 @@
             const qtyInput = document.getElementById("qtyInput");
             const priceInput = document.getElementById("priceInput");
             const tableInput = document.getElementById("tableInput");
+            const finalPriceInput = document.getElementById("finalPriceInput");
 
             const name = nameInput.value.trim();
             const qty = Number(qtyInput.value);
 
-            if (!name) return alert("Please search/select an item");
+            // This is the menu price (might be text)
+            let price = priceInput.value;
 
-            // Allow adding items even if not in menuMap (custom items), but warn if no price
-            if (!priceInput.value) return alert("Please enter price");
+            if (!name) return alert("Please search/select an item");
+            if (!price) return alert("Please enter price");
+
+            // Handle non-numeric price logic
+            if (!isNumericPrice(price)) {
+                const manualPrice = Number(finalPriceInput.value);
+                if (!manualPrice || manualPrice <= 0) {
+                    alert("Please enter the final price for this item");
+                    return;
+                }
+                // Override the text price with the manual numeric price
+                price = manualPrice;
+            }
 
             // Set table no if first item
             if (currentBill.items.length === 0) {
@@ -1809,13 +1844,10 @@
             }
             currentBill.tableNo = tableInput.value;
 
-            // Use the value from the input directly (it might be text or number)
-            const price = priceInput.value;
-
             currentBill.items.push({
                 name,
                 qty,
-                price
+                price: Number(price) // Ensure stored as number for math
             });
 
             renderBillItems();
@@ -1824,6 +1856,9 @@
             nameInput.value = "";
             qtyInput.value = 1;
             priceInput.value = "";
+            finalPriceInput.value = "";
+            document.getElementById("manualPriceBox").style.display = "none";
+
             nameInput.focus();
         };
 

@@ -2,58 +2,121 @@
 <html>
 
 <head>
-    <title>Chef Cafe Bill</title>
+    <title>Bill</title>
     <style>
         body {
             font-family: monospace;
+            background: #f5f5f5;
+            padding: 20px;
         }
 
-        h3 {
+        .bill {
+            max-width: 350px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .center {
             text-align: center;
+            margin-top: 0;
         }
 
         .row {
             display: flex;
             justify-content: space-between;
+            margin: 6px 0;
+            font-size: 14px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px dashed #ccc;
+            margin: 15px 0;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-share {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-print {
+            background: #10b981;
+            color: white;
         }
     </style>
 </head>
 
 <body>
 
-    <h3>Chef Cafe</h3>
-    <p id="billInfo"></p>
-    <hr>
-    <div id="billLines"></div>
-    <hr>
-    <div class="row">
-        <strong>Total</strong>
-        <strong id="total"></strong>
+    <div class="bill">
+        <h3 class="center">Chef Cafe</h3>
+        <p id="info" style="text-align:center; font-size:12px; color:#666;"></p>
+        <hr>
+
+        <div id="items"></div>
+
+        <hr>
+        <div class="row" style="font-size:16px;">
+            <strong>Total</strong>
+            <strong id="total"></strong>
+        </div>
+
+        <div class="actions">
+            <button class="btn-share" onclick="shareBill()">🔗 Share</button>
+            <button class="btn-print" onclick="window.print()">🖨 Print</button>
+        </div>
     </div>
 
     <script>
         const bill = JSON.parse(localStorage.getItem("printBill"));
 
         if (bill) {
-            document.getElementById("billInfo").innerText =
-                `Bill: ${bill.billNo} | Table: ${bill.tableNo}`;
+            document.getElementById("info").innerText =
+                `Bill: ${bill.billNo} \n Table: ${bill.tableNo} | ${bill.date}`;
 
-            const lines = document.getElementById("billLines");
+            const itemsDiv = document.getElementById("items");
 
             bill.items.forEach(i => {
-                lines.innerHTML += `
-        <div class="row">
-          <span>${i.name} x${i.qty}</span>
-          <span>${i.price}</span>
-        </div>
-      `;
+                itemsDiv.innerHTML += `
+          <div class="row">
+            <span>${i.name} <span style="font-size:11px; color:#888;">x${i.qty}</span></span>
+            <span>₹${i.price * i.qty}</span>
+          </div>
+        `;
             });
 
             document.getElementById("total").innerText = "₹" + bill.total;
-
-            window.print();
         } else {
-            document.body.innerText = "No bill data found to print.";
+            document.body.innerHTML = "<p style='text-align:center; margin-top:50px;'>No bill found.</p>";
+        }
+
+        function shareBill() {
+            if (navigator.share) {
+                navigator.share({
+                    title: "Chef Cafe Bill",
+                    text: `Table ${bill.tableNo} - Total: ₹${bill.total} \nThank you for dining!`
+                }).catch(console.error);
+            } else {
+                alert("Sharing not supported on this device/browser.");
+            }
         }
     </script>
 
