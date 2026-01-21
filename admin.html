@@ -667,8 +667,10 @@
             <h3 style="margin-top:20px">Top Items Today</h3>
             <div id="topItems"></div>
 
-            <h3 style="margin-top:20px">Last 7 Days Activity</h3>
-            <canvas id="activityChart" height="120"></canvas>
+            <div class="dash-card" style="margin-top:20px">
+                <h3>📊 Items Sold (Last 7 Days)</h3>
+                <canvas id="salesChart" height="120"></canvas>
+            </div>
         </section>
 
         <!-- MENU SECTION -->
@@ -1361,10 +1363,10 @@
                 adminPanel.style.display = "block";
 
                 // Load initial data
-                loadItems();            // Existing Menu Items
-                loadDashboardGraph();   // Dashboard
-                loadTodaySoldItems();   // Dashboard
-                loadBillingItems();     // Billing Dropdown
+                loadItems();            // Menu Items for CRUD
+                loadBillingItems();     // Menu for Billing
+                loadDashboard();        // Dashboard Stats
+                loadDashboardGraph();   // Dashboard Graph
                 loadBills('7days');     // Bills History
 
                 // Show default page
@@ -1468,6 +1470,7 @@
                 let billCount = snapshot.size;
                 let totalItemsCount = 0;
                 let itemMap = {};
+                let dayMap = {};
 
                 snapshot.forEach(docSnap => {
                     const bill = docSnap.data();
@@ -1475,6 +1478,13 @@
                         bill.items.forEach(i => {
                             totalItemsCount += i.qty;
                             itemMap[i.name] = (itemMap[i.name] || 0) + i.qty;
+                        });
+
+                        // Populate dayMap
+                        const dateKey = new Date(bill.timestamp).toISOString().split("T")[0];
+                        if (!dayMap[dateKey]) dayMap[dateKey] = 0;
+                        bill.items.forEach(item => {
+                            dayMap[dateKey] += item.qty;
                         });
                     }
                 });
@@ -1501,56 +1511,48 @@
                                 </div>
                             `;
                         });
+
+                    const labels = Object.keys(dayMap).sort();
+                    const data = labels.map(k => dayMap[k]);
+
+                    // Destroy old chart if exists
+                    if (salesChartInstance) {
+                        salesChartInstance.destroy();
+                    }
+
+                    salesChartInstance = new Chart(ctx, {
+                        type: "line",
+                        data: {
+                            labels,
+                            datasets: [{
+                                label: "Items Sold",
+                                data,
+                                borderColor: "#10b981",
+                                backgroundColor: "rgba(16,185,129,0.15)",
+                                tension: 0.3,
+                                fill: true,
+                                pointRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { stepSize: 1 }
+                                }
+                            }
+                        }
+                    });
                 }
-            });
-        }
-
-        async function loadActivityChart() {
-            const ctx = document.getElementById("activityChart");
-            if (!ctx) return;
-
-            const labels = [];
-            const data = [];
-
-            // Last 7 days loop
-            for (let i = 6; i >= 0; i--) {
-                const day = Date.now() - (i * 86400000);
-                const s = startOfDay(day);
-                const e = endOfDay(day);
-
-                const q = query(
-                    collection(db, "bills"),
-                    where("timestamp", ">=", s),
-                    where("timestamp", "<=", e),
-                    where("status", "==", "PAID")
-                );
-
-                const snap = await getDocs(q);
-
-                labels.push(new Date(day).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }));
-                data.push(snap.size);
-            }
-
-            if (window.myChart) window.myChart.destroy();
-
-            window.myChart = new Chart(ctx, {
-                type: "line",
-                data: {
-                    labels,
-                    datasets: [{
-                        label: "Bills Paid",
-                        data,
-                        borderColor: "#667eea",
-                        backgroundColor: "rgba(102,126,234,0.15)",
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }, (error) => {
+                console.error("Dashboard graph error:", error);
+                // If index missing, it will log here
+                if (error.code === 'failed-precondition') {
+                    console.warn("Missing Index URL:", error.message);
                 }
             });
         }
@@ -2192,6 +2194,7 @@
             win.close();
         };
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 
 </html>
