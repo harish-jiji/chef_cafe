@@ -786,8 +786,6 @@
             addDoc,
             updateDoc,
             deleteDoc,
-            updateDoc,
-            deleteDoc,
             doc,
             getDoc,
             setDoc,
@@ -1303,8 +1301,8 @@
          * Shows/hides appropriate UI based on login status
          */
         onAuthStateChanged(auth, user => {
-            if (user && user.email === "owner@chefscafe.com") {
-                // User is authenticated - show dashboard
+            if (user) {
+                // Logged in
                 loginBox.style.display = "none";
                 adminPanel.style.display = "block";
 
@@ -1318,16 +1316,16 @@
                 // Show default page
                 showPage('dashboard');
 
-                console.log('✅ User authenticated:', user.email);
+                console.log('✅ Logged in:', user.email);
             } else {
-                // User is not authenticated - show login
+                // Logged out
                 loginBox.style.display = "block";
                 adminPanel.style.display = "none";
 
                 // Clear any sensitive data
                 if (itemsDiv) itemsDiv.innerHTML = '';
 
-                console.log('⚠️ User not authenticated');
+                console.log('🚪 Logged out');
             }
         });
 
