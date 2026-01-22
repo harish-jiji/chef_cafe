@@ -805,6 +805,11 @@
                 </div>
 
                 <div class="dash-card">
+                    <h3>Today Revenue</h3>
+                    <p id="todayAmount">₹0</p>
+                </div>
+
+                <div class="dash-card">
                     <h3>Items Sold Today</h3>
                     <p id="itemsToday">0</p>
                 </div>
@@ -1608,6 +1613,48 @@
 
             } catch (err) {
                 console.error("Dashboard graph error:", err);
+            }
+        };
+
+        window.loadDashboard = async function () {
+            console.log("Loading dashboard stats...");
+            try {
+                const today = new Date().toISOString().slice(0, 10);
+
+                const q = query(
+                    collection(db, "bills"),
+                    where("date", "==", today),
+                    where("status", "==", "PAID")
+                );
+
+                const snap = await getDocs(q);
+
+                let totalAmount = 0;
+                let totalBills = snap.size;
+                let totalItems = 0;
+
+                snap.forEach(doc => {
+                    const bill = doc.data();
+                    totalAmount += Number(bill.total) || 0;
+
+                    if (bill.items && Array.isArray(bill.items)) {
+                        bill.items.forEach(item => {
+                            totalItems += Number(item.qty) || 0;
+                        });
+                    }
+                });
+
+                // Update UI safely
+                const amountEl = document.getElementById("todayAmount");
+                const billsEl = document.getElementById("billsToday");
+                const itemsEl = document.getElementById("itemsToday");
+
+                if (amountEl) amountEl.textContent = "₹" + totalAmount;
+                if (billsEl) billsEl.textContent = totalBills;
+                if (itemsEl) itemsEl.textContent = totalItems;
+
+            } catch (error) {
+                console.error("Error loading dashboard stats:", error);
             }
         };
 
