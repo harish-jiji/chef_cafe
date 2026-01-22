@@ -1988,7 +1988,27 @@
             const dateStr = new Date().toISOString().split("T")[0];
 
             // Generate Bill No
-            const billNo = await generateBillNo();
+            const { billNoPrefix, startTimestamp } = generateBillNo();
+
+            // Counter Logic
+            const counterRef = doc(db, "counters", billNoPrefix);
+            let billNo;
+
+            try {
+                // Try to increment counter
+                await updateDoc(counterRef, {
+                    count: increment(1)
+                });
+
+                const snap = await getDoc(counterRef);
+                const count = snap.data().count;
+                billNo = `${billNoPrefix}-${String(count).padStart(3, '0')}`;
+
+            } catch (err) {
+                // If counter doesn't exist, create it
+                await setDoc(counterRef, { count: 1 });
+                billNo = `${billNoPrefix}-001`;
+            }
 
             const billData = {
                 billNo: billNo,
@@ -2046,22 +2066,21 @@
         }
 
         // Keep generateBillNo as it was useful
-        async function generateBillNo() {
+        function generateBillNo() {
             const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const dateStr = `${yyyy}${mm}${dd}`;
 
-            const start = startOfDay(Date.now());
-            const end = endOfDay(Date.now());
+            // Start of today (00:00)
+            const startOfDay = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate()
+            );
 
-            const q = query(collection(db, "bills"), where("timestamp", ">=", start), where("timestamp", "<=", end));
-            const snap = await getDocs(q);
-            const count = snap.size + 1;
-
-            const suffix = String(count).padStart(3, '0');
-            return `B-${dateStr}-${suffix}`;
+            const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
+            return {
+                billNoPrefix: `B-${dateStr}`,
+                startTimestamp: startOfDay.getTime()
+            };
         }
 
 
