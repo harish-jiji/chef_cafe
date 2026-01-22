@@ -63,8 +63,31 @@
             color: white;
         }
 
+        .back-btn {
+            background: #eee;
+            border: none;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+
+        .back-btn:hover {
+            background: #e0e0e0;
+        }
+
         /* PRINT STYLES - THERMAL PRINTER OPTIMIZED */
         @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+
+            /* Hide everything except bill */
             body * {
                 visibility: hidden;
             }
@@ -78,9 +101,17 @@
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 78mm;
-                /* Slightly less than 80mm to prevent overflow */
-                padding: 0;
+                width: 58mm;
+                /* 🔥 KEY PART */
+                padding: 4mm;
+                font-family: monospace;
+                font-size: 12px;
+                line-height: 1.4;
+            }
+
+            @page {
+                size: 58mm auto;
+                /* 🔥 Thermal paper */
                 margin: 0;
             }
 
@@ -88,10 +119,11 @@
                 box-shadow: none;
                 margin: 0;
                 padding: 0;
-                width: 100%;
+                width: auto;
             }
 
-            .actions {
+            .actions,
+            .back-btn {
                 display: none !important;
             }
         }
@@ -99,6 +131,8 @@
 </head>
 
 <body>
+
+    <button class="back-btn" onclick="goBackToBilling()">← Back to Billing</button>
 
     <div class="bill-container">
         <!-- WRAPPER FOR PRINTING -->
@@ -158,6 +192,10 @@
             } else {
                 alert("Sharing not supported on this device/browser.");
             }
+        }
+
+        function goBackToBilling() {
+            window.location.href = "admin.html#billing";
         }
     </script>
 
