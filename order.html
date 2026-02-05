@@ -4,168 +4,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chef Cafe - New Order</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>New Draft Order - Chef Cafe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #f97316;
-            --primary-dark: #ea580c;
-            --secondary: #1e293b;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #334155;
-            --text-light: #64748b;
-            --border: #e2e8f0;
+            --primary: #FF6B35;
+            --primary-light: #FF8C5A;
+            --primary-dark: #E55100;
+            --secondary: #1E293B;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --border: #E2E8F0;
+            --text-dark: #1E293B;
+            --text-light: #64748B;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* NAVBAR STYLES */
+        .navbar {
+            background: linear-gradient(135deg, var(--secondary) 0%, #334155 100%);
+            padding: 0;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin: -20px -20px 20px -20px;
+            /* Counteract body padding */
+        }
+
+        .navbar-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+
+        .navbar-brand i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn.section {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .nav-btn.section:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .nav-btn.section.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', system-ui, sans-serif;
         }
 
         body {
-            background: var(--bg);
-            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+            color: var(--text-dark);
             min-height: 100vh;
             padding: 20px;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .header-top a {
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--secondary) 0%, #334155 100%);
+            border-radius: 10px;
+            font-weight: 600;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .header-top a:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .header h1 {
-            color: var(--secondary);
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
         }
 
         .header p {
+            font-size: 16px;
             color: var(--text-light);
-            font-size: 14px;
+        }
+
+        .header-icon {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
         }
 
         .card {
             background: var(--card-bg);
             border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            padding: 28px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card h3 i {
+            color: var(--primary);
+            font-size: 24px;
         }
 
         .input-group {
-            margin-bottom: 20px;
-            position: relative;
+            margin-bottom: 24px;
         }
 
         .input-group label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--secondary);
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-dark);
             font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .input-field {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 16px;
             border: 2px solid var(--border);
             border-radius: 12px;
             font-size: 16px;
-            transition: all 0.2s;
-            background: #fff;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: white;
         }
 
         .input-field:focus {
-            border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: var(--text-light);
         }
 
         .item-selection {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 12px;
             align-items: flex-end;
+            position: relative;
+            margin-bottom: 20px;
         }
 
-        .btn {
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-            font-size: 16px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--border);
-            color: var(--text-light);
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-            padding: 8px;
-            width: auto;
-            font-size: 14px;
-        }
-
-        .item-list {
-            list-style: none;
-            margin-top: 10px;
-        }
-
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-            animation: slideIn 0.3s ease;
-        }
-
-        .order-item:last-child {
-            border-bottom: none;
-        }
-
-        .item-name {
-            font-weight: 500;
-            color: var(--secondary);
-        }
-
-        .item-qty {
-            color: var(--text-light);
-            font-size: 14px;
-            margin-right: 10px;
+        .search-wrapper {
+            position: relative;
         }
 
         .suggestions {
@@ -176,17 +279,26 @@
             background: white;
             border: 1px solid var(--border);
             border-radius: 12px;
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
             z-index: 10;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-lg);
             display: none;
+            margin-top: 4px;
+        }
+
+        .suggestions.show {
+            display: block;
         }
 
         .suggestion-item {
-            padding: 12px 16px;
+            padding: 14px 16px;
             cursor: pointer;
             border-bottom: 1px solid var(--border);
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .suggestion-item:last-child {
@@ -194,7 +306,122 @@
         }
 
         .suggestion-item:hover {
-            background: #f1f5f9;
+            background: var(--bg);
+            padding-left: 20px;
+        }
+
+        .suggestion-item-name {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .suggestion-item-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .suggestion-item-category {
+            background: #FFE8DC;
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .suggestion-item-price {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+            width: auto;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-outline {
+            background: white;
+            border: 2px solid var(--border);
+            color: var(--text-dark);
+            width: 100%;
+        }
+
+        .btn-outline:hover {
+            background: var(--bg);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+            border: none;
+            padding: 8px 12px;
+            width: auto;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        .btn-danger:hover {
+            background: #EF4444;
+            color: white;
+        }
+
+        .item-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+            margin-bottom: 8px;
+            border-radius: 12px;
+            animation: slideIn 0.3s ease;
+            transition: all 0.2s ease;
+        }
+
+        .order-item:hover {
+            background: #F1F5F9;
+            padding-right: 12px;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
         }
 
         @keyframes slideIn {
@@ -209,30 +436,202 @@
             }
         }
 
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--secondary);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            animation: fadeIn 0.3s ease;
-            display: none;
+        .item-info {
+            flex: 1;
         }
 
-        @keyframes fadeIn {
+        .item-name {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 15px;
+        }
+
+        .item-details {
+            color: var(--text-light);
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .item-qty-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .item-price-badge {
+            display: inline-block;
+            background: #E0E7FF;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 12px;
+        }
+
+        #emptyState {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-light);
+        }
+
+        #emptyState i {
+            font-size: 48px;
+            color: var(--border);
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        #emptyState p {
+            font-size: 16px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: var(--text-dark);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-xl);
+            z-index: 1000;
+            display: none;
+            animation: slideInUp 0.3s ease;
+            border-left: 4px solid var(--primary);
+            max-width: 400px;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.error {
+            border-left-color: var(--danger);
+        }
+
+        .notification.success {
+            border-left-color: var(--success);
+        }
+
+        @keyframes slideInUp {
             from {
+                transform: translate(-50%, 30px);
                 opacity: 0;
-                transform: translate(-50%, 20px);
             }
 
             to {
-                opacity: 1;
                 transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .item-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .container {
+                padding: 0;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-top a {
+                position: static;
+                width: 100%;
+                margin-bottom: 16px;
+                justify-content: center;
+            }
+
+            .header {
+                margin-bottom: 24px;
+                margin-top: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
+
+            .card {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+
+            .btn {
+                font-size: 14px;
+                padding: 12px 16px;
+            }
+
+            .item-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .suggestion-item {
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+
+            .order-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .item-actions {
+                width: 100%;
+                margin-top: 12px;
+                margin-left: 0;
+            }
+
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .notification {
+                max-width: calc(100vw - 40px);
+                left: 20px;
+                right: 20px;
+                transform: none;
             }
         }
     </style>
@@ -240,60 +639,116 @@
 
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1>New Draft Order</h1>
-            <p>Select items and table number</p>
-        </div>
-
-        <!-- Table Number -->
-        <div class="card">
-            <div class="input-group">
-                <label>Table Number</label>
-                <input type="number" id="tableNo" class="input-field" placeholder="e.g. 5">
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navbar-top">
+            <a href="admin.html" class="navbar-brand">
+                <i class="fas fa-utensils"></i>
+                Chef Cafe
+            </a>
+            <div class="navbar-menu">
+                <button class="nav-btn" id="logoutBtn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
         </div>
 
-        <!-- Item Selection -->
-        <div class="card">
-            <label style="display:block; margin-bottom:8px; font-weight:500; color:var(--secondary);">Add Items</label>
-            <div class="item-selection">
-                <div style="flex: 2; position: relative;">
-                    <input type="text" id="itemSearch" class="input-field" placeholder="Search item..."
-                        autocomplete="off">
-                    <div class="suggestions" id="suggestions"></div>
-                </div>
-                <div style="flex: 1;">
-                    <input type="number" id="itemQty" class="input-field" value="1" min="1" placeholder="Qty">
-                </div>
-            </div>
-            <button class="btn btn-secondary" onclick="addItem()" style="margin-top: 15px;">
-                <i class="fas fa-plus"></i> Add Item
+        <div class="admin-nav">
+            <button class="nav-btn section" onclick="window.location.href='admin.html'">
+                <i class="fas fa-chart-line"></i> Dashboard
             </button>
-        </div>
-
-        <!-- Order Summary -->
-        <div class="card">
-            <h3>Current Order</h3>
-            <p id="emptyState" style="color:var(--text-light); text-align:center; padding:20px;">No items added yet</p>
-            <ul id="itemList" class="item-list"></ul>
-        </div>
-
-        <!-- Actions -->
-        <div style="display: flex; gap: 15px;">
-            <button class="btn btn-outline" onclick="window.location.href='index.html'">Cancel</button>
-            <button class="btn btn-primary" onclick="saveDraftOrder()">
-                <i class="fas fa-save"></i> Save Draft
+            <button class="nav-btn section" onclick="window.location.href='admin.html'"> <!-- Menu is in admin -->
+                <i class="fas fa-book"></i> Menu
+            </button>
+            <button class="nav-btn section" onclick="window.location.href='billing.html'">
+                <i class="fas fa-receipt"></i> Billing
+            </button>
+            <button class="nav-btn section active" onclick="window.location.href='order.html'">
+                <i class="fas fa-clipboard-list"></i> New Order
+            </button>
+            <button class="nav-btn section" id="historyTab" onclick="window.location.href='history.html'">
+                <i class="fas fa-history"></i> History
             </button>
         </div>
     </div>
 
-    <div id="notification" class="notification">Draft Saved!</div>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <h1>Create Order</h1>
+            <p>Start a new order by selecting table and items from menu</p>
+        </div>
+
+        <!-- TABLE SELECTION -->
+        <div class="card">
+            <h3>
+                <i class="fas fa-chair"></i> Table Number
+            </h3>
+            <div class="input-group">
+                <label>Select or Enter Table Number</label>
+                <input type="number" id="tableNo" class="input-field" placeholder="e.g., 5" min="1">
+            </div>
+        </div>
+
+        <!-- ITEM SELECTION -->
+        <div class="card">
+            <h3>
+                <i class="fas fa-plus-circle"></i> Add Items
+            </h3>
+
+            <div class="item-selection">
+                <div class="search-wrapper">
+                    <label
+                        style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--text-dark); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Search
+                        Items</label>
+                    <input type="text" id="itemSearch" class="input-field" placeholder="Search menu items..."
+                        autocomplete="off">
+                    <div class="suggestions" id="suggestions"></div>
+                </div>
+
+                <div>
+                    <label
+                        style="display: block; margin-bottom: 10px; font-weight: 600; color: var(--text-dark); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Qty</label>
+                    <input type="number" id="itemQty" class="input-field" value="1" min="1">
+                </div>
+
+                <button class="btn btn-primary" onclick="addItem()" style="margin-bottom: 0;">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <div class="card">
+            <h3>
+                <i class="fas fa-list"></i> Current Order
+            </h3>
+            <div id="emptyState" style="padding: 40px 0;">
+                <i class="fas fa-inbox"></i>
+                <p>No items added yet</p>
+            </div>
+            <ul id="itemList" class="item-list"></ul>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="action-grid">
+            <button class="btn btn-outline" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i> Cancel
+            </button>
+            <button class="btn btn-primary" onclick="saveDraftOrder()" style="width: 100%;">
+                <i class="fas fa-save"></i> Save Order
+            </button>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAON6aij8dNGoRlJ1DdLcwMkPZsAGe-SBQ",
@@ -308,75 +763,110 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Redirect if not logged in
         onAuthStateChanged(auth, user => {
             if (!user) {
                 window.location.href = 'admin.html';
             }
         });
 
+        window.logout = () => {
+            signOut(auth).then(() => {
+                window.location.href = 'admin.html';
+            });
+        };
+
         let currentItems = [];
         let menuItems = [];
 
-        // Load Menu Items on Start
+        // Load Menu
         async function loadMenu() {
-            const querySnapshot = await getDocs(collection(db, "menu_items"));
-            menuItems = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            try {
+                const snap = await getDocs(collection(db, "menu_items"));
+                menuItems = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                showNotify('Error loading menu: ' + error.message, 'error');
+            }
         }
         loadMenu();
 
-        // DOM Elements
+        // Search Logic
         const itemSearch = document.getElementById('itemSearch');
         const suggestionsBox = document.getElementById('suggestions');
         const itemList = document.getElementById('itemList');
         const emptyState = document.getElementById('emptyState');
 
-        // Search Logic
         itemSearch.addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
             suggestionsBox.innerHTML = '';
+
             if (val.length < 1) {
-                suggestionsBox.style.display = 'none';
+                suggestionsBox.classList.remove('show');
                 return;
             }
 
-            const matches = menuItems.filter(item => item.name.toLowerCase().includes(val));
+            const matches = menuItems.filter(item =>
+                item.name.toLowerCase().includes(val) ||
+                item.category.toLowerCase().includes(val)
+            );
 
             if (matches.length > 0) {
-                suggestionsBox.style.display = 'block';
+                suggestionsBox.classList.add('show');
                 matches.forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'suggestion-item';
-                    div.textContent = item.name;
+                    div.innerHTML = `
+                        <div>
+                            <div class="suggestion-item-name">${item.name}</div>
+                            <div class="suggestion-item-meta">
+                                <span class="suggestion-item-category">${item.category}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="suggestion-item-price">₹${Number(item.price).toFixed(2)}</span>
+                            <i class="fas fa-chevron-right" style="color: var(--text-light); font-size: 12px;"></i>
+                        </div>
+                    `;
                     div.onclick = () => {
                         itemSearch.value = item.name;
-                        suggestionsBox.style.display = 'none';
+                        suggestionsBox.classList.remove('show');
+                        itemSearch.focus();
                     };
                     suggestionsBox.appendChild(div);
                 });
             } else {
-                suggestionsBox.style.display = 'none';
+                suggestionsBox.classList.remove('show');
             }
         });
 
-        // Close suggestions on click outside
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('#itemSearch')) {
-                suggestionsBox.style.display = 'none';
+            if (!e.target.closest('.search-wrapper')) {
+                suggestionsBox.classList.remove('show');
             }
         });
 
         // Add Item
         window.addItem = () => {
-            const name = itemSearch.value;
-            const qty = parseInt(document.getElementById('itemQty').value);
+            const name = itemSearch.value.trim();
+            const qty = parseInt(document.getElementById('itemQty').value) || 1;
 
             if (!name || qty < 1) {
-                showNotify("Please select an item", "error");
+                showNotify("Please select an item and quantity", "error");
                 return;
             }
 
-            currentItems.push({ name, qty });
+            const menuItem = menuItems.find(item => item.name.toLowerCase() === name.toLowerCase());
+            if (!menuItem) {
+                showNotify("Please select a valid item from the list", "error");
+                return;
+            }
+
+            currentItems.push({
+                name: menuItem.name,
+                qty,
+                category: menuItem.category,
+                price: menuItem.price
+            });
+
             renderList();
 
             itemSearch.value = '';
@@ -392,22 +882,31 @@
 
         function renderList() {
             itemList.innerHTML = '';
+
             if (currentItems.length === 0) {
                 emptyState.style.display = 'block';
             } else {
                 emptyState.style.display = 'none';
                 currentItems.forEach((item, index) => {
-                    itemList.innerHTML += `
-                    <li class="order-item">
-                        <div>
-                            <span class="item-name">${item.name}</span>
+                    const li = document.createElement('li');
+                    li.className = 'order-item';
+                    const itemTotal = (item.price * item.qty).toFixed(2);
+                    li.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-details">
+                                <span class="item-price-badge">${item.category}</span>
+                                <span class="item-qty-badge">×${item.qty}</span>
+                                <span style="color: var(--primary); font-weight: 600;">₹${itemTotal}</span>
+                            </div>
                         </div>
-                        <div style="display:flex; align-items:center">
-                            <span class="item-qty">x${item.qty}</span>
-                            <button class="btn-danger" onclick="removeItem(${index})"><i class="fas fa-trash"></i></button>
+                        <div class="item-actions">
+                            <button class="btn-danger" onclick="removeItem(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
-                    </li>
-                `;
+                    `;
+                    itemList.appendChild(li);
                 });
             }
         }
@@ -417,43 +916,56 @@
             const tableNo = document.getElementById('tableNo').value;
 
             if (!tableNo) {
-                showNotify("Please enter Table Number");
+                showNotify("Please enter table number", "error");
                 return;
             }
             if (currentItems.length === 0) {
-                showNotify("Order is empty");
+                showNotify("Please add at least one item", "error");
                 return;
             }
 
             try {
+                // Generate Order ID (using billNo format for consistency with single-collection model)
+                const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+                const uniqueId = `${Math.floor(1000 + Math.random() * 9000)}`;
+                const tempBillNo = `ORD-${dateStr}-${uniqueId}`;
+
                 await addDoc(collection(db, "bills"), {
-                    billNo: "DRAFT-" + Date.now().toString().slice(-4), // Simple ID
+                    billNo: tempBillNo, // Temporary ID until finalized
                     tableNo,
-                    items: currentItems,
-                    status: "DRAFT", // Uppercase as per filter
+                    items: currentItems.map(item => ({
+                        name: item.name,
+                        qty: item.qty,
+                        price: item.price,
+                        category: item.category
+                    })),
+                    status: "DRAFT", // Uppercase to match billing logic
                     total: 0,
                     createdAt: Date.now(),
                     timestamp: Date.now(),
                     date: new Date().toISOString().split("T")[0]
                 });
 
-                showNotify("Draft saved successfully!");
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } catch (e) {
-                console.error(e);
-                showNotify("Error saving draft: " + e.message);
+                showNotify("Order saved successfully!", "success");
+                setTimeout(() => window.location.href = 'billing.html', 1000);
+
+            } catch (error) {
+                showNotify("Error saving order: " + error.message, "error");
             }
         };
 
-        function showNotify(msg) {
-            const n = document.getElementById('notification');
-            n.textContent = msg;
-            n.style.display = 'block';
-            setTimeout(() => n.style.display = 'none', 3000);
+        window.goBack = () => {
+            window.location.href = 'admin.html';
+        };
+
+        function showNotify(msg, type = 'success') {
+            const notif = document.getElementById('notification');
+            notif.textContent = msg;
+            notif.className = `notification show ${type}`;
+            setTimeout(() => notif.classList.remove('show'), 3000);
         }
     </script>
+
 </body>
 
 </html>

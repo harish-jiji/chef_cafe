@@ -1,85 +1,321 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Bill for Table</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Print Bill - Chef Cafe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: monospace;
-            background: #f5f5f5;
-            padding: 20px;
+        :root {
+            --primary: #FF6B35;
+            --secondary: #1a1a2e;
+            --light: #f8f9fa;
+            --text: #333;
+            --text-light: #666;
+            --border: #ddd;
+            --success: #10b981;
         }
 
-        .bill-container {
-            max-width: 350px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        /* NAVBAR STYLES */
+        .navbar {
+            background: linear-gradient(135deg, var(--secondary) 0%, #334155 100%);
+            padding: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 24px;
         }
 
-        .center {
-            text-align: center;
-            margin-top: 0;
-        }
-
-        .row {
+        .navbar-top {
             display: flex;
             justify-content: space-between;
-            margin: 6px 0;
-            font-size: 14px;
+            align-items: center;
+            padding: 16px 20px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        hr {
-            border: none;
-            border-top: 1px dashed #ccc;
-            margin: 15px 0;
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+
+        .navbar-brand i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn.section {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .nav-btn.section:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .nav-btn.section.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        /* HIDE NAVBAR ON PRINT */
+        @media print {
+            .navbar {
+                display: none !important;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--light);
+            padding: 12px;
+        }
+
+
+
+        .bill-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 0 auto;
+            margin-bottom: 20px;
+        }
+
+        .bill-printer {
+            display: none;
+        }
+
+        .bill-header {
+            text-align: center;
+            margin-bottom: 16px;
+            border-bottom: 2px dashed var(--border);
+            padding-bottom: 12px;
+        }
+
+        .restaurant-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .restaurant-icon {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .bill-info {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        .bill-info-line {
+            font-weight: 600;
+        }
+
+        .bill-items {
+            margin: 16px 0;
+            border-bottom: 2px dashed var(--border);
+            padding-bottom: 12px;
+        }
+
+        .items-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .bill-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px dotted var(--border);
+        }
+
+        .bill-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-left {
+            flex: 1;
+        }
+
+        .item-qty {
+            text-align: center;
+            min-width: 40px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .item-price {
+            text-align: right;
+            min-width: 60px;
+            font-weight: 600;
+        }
+
+        .bill-total {
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, #FF8C5A 100%);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .total-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .total-amount {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .bill-footer {
+            text-align: center;
+            padding: 12px 0;
+            border-top: 2px dashed var(--border);
+            color: var(--text-light);
+            font-size: 11px;
+        }
+
+        .thank-you {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .footer-text {
+            margin-bottom: 2px;
         }
 
         .actions {
             display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 16px;
         }
 
-        button {
+        .btn {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.3s ease;
         }
 
-        .btn-share {
-            background: #3b82f6;
-            color: white;
+        .btn:active {
+            transform: scale(0.95);
         }
 
         .btn-print {
-            background: #10b981;
+            background: linear-gradient(135deg, var(--success) 0%, #0d9488 100%);
             color: white;
         }
 
-        .back-btn {
-            background: #eee;
-            border: none;
-            padding: 8px 12px;
-            margin-bottom: 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-            text-align: left;
+        .btn-share {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
         }
 
-        .back-btn:hover {
-            background: #e0e0e0;
+        .btn-back {
+            background: var(--light);
+            color: var(--text);
+            border: 2px solid var(--border);
         }
 
-        /* PRINT STYLES - THERMAL PRINTER OPTIMIZED */
+        .empty-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* PRINT STYLES */
         @media print {
             body {
                 margin: 0;
@@ -87,44 +323,39 @@
                 background: white;
             }
 
-            /* Hide everything except bill */
             body * {
                 visibility: hidden;
             }
 
-            #billPrintArea,
-            #billPrintArea * {
+            .bill-printer,
+            .bill-printer * {
                 visibility: visible;
             }
 
-            #billPrintArea {
+            .bill-printer {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 58mm;
-                /* 🔥 KEY PART */
                 padding: 4mm;
                 font-family: monospace;
-                font-size: 12px;
+                font-size: 10px;
                 line-height: 1.4;
             }
 
             @page {
                 size: 58mm auto;
-                /* 🔥 Thermal paper */
                 margin: 0;
             }
 
+            .actions {
+                display: none;
+            }
+        }
+
+        @media (min-width: 768px) {
             .bill-container {
-                box-shadow: none;
-                margin: 0;
-                padding: 0;
-                width: auto;
-            }
-
-            .actions,
-            .back-btn {
-                display: none !important;
+                max-width: 400px;
             }
         }
     </style>
@@ -132,70 +363,150 @@
 
 <body>
 
-    <button class="back-btn" onclick="goBackToBilling()">← Back to Billing</button>
-
-    <div class="bill-container">
-        <!-- WRAPPER FOR PRINTING -->
-        <div id="billPrintArea">
-            <h3 class="center" style="margin-bottom:5px">Chef Cafe</h3>
-            <p id="info" style="text-align:center; font-size:12px; color:#333; margin-top:0"></p>
-            <hr>
-
-            <div id="items"></div>
-
-            <hr>
-            <div class="row" style="font-size:16px;">
-                <strong>Total</strong>
-                <strong id="total"></strong>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navbar-top">
+            <a href="admin.html" class="navbar-brand">
+                <i class="fas fa-utensils"></i>
+                Chef Cafe
+            </a>
+            <div class="navbar-menu">
+                <button class="nav-btn" id="logoutBtn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
-
-            <p style="text-align:center; font-size:12px; margin-top:20px;">Thank you for dining!</p>
         </div>
 
-        <div class="actions">
-            <button class="btn-share" onclick="shareBill()">🔗 Share</button>
-            <button class="btn-print" onclick="window.print()">🖨 Print</button>
+        <div class="admin-nav">
+            <button class="nav-btn section" onclick="window.location.href='admin.html'">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </button>
+            <button class="nav-btn section" onclick="window.location.href='admin.html'">
+                <i class="fas fa-book"></i> Menu
+            </button>
+            <button class="nav-btn section" onclick="window.location.href='billing.html'">
+                <i class="fas fa-receipt"></i> Billing
+            </button>
+            <button class="nav-btn section" onclick="window.location.href='order.html'">
+                <i class="fas fa-clipboard-list"></i> New Order
+            </button>
+            <button class="nav-btn section" onclick="window.location.href='history.html'">
+                <i class="fas fa-history"></i> History
+            </button>
+        </div>
+    </div>
+
+    <div class="bill-container">
+        <div id="billPrintArea" class="bill-printer">
+            <div class="bill-header">
+                <div class="restaurant-icon">🍽️</div>
+                <div class="restaurant-name">Chef Cafe</div>
+                <div class="bill-info">
+                    <div class="bill-info-line" id="billNo">Bill #B-001</div>
+                    <div id="billMeta">Table: - | Date: -</div>
+                </div>
+            </div>
+
+            <div class="bill-items">
+                <div class="items-header">
+                    <span class="item-left">Item</span>
+                    <span class="item-qty">Qty</span>
+                    <span class="item-price">Price</span>
+                </div>
+                <div id="billItemsList"></div>
+            </div>
+
+            <div class="bill-total">
+                <div class="total-label">TOTAL AMOUNT</div>
+                <div class="total-amount" id="totalAmount">₹0</div>
+            </div>
+
+            <div class="bill-footer">
+                <div class="thank-you">🙏 Thank You!</div>
+                <div class="footer-text">Please visit us again</div>
+                <div class="footer-text">Chef Cafe • Since 2024</div>
+            </div>
+        </div>
+
+        <!-- Preview (Non-Print) -->
+        <div id="billPreview"></div>
+
+        <div class="actions" id="actions">
+            <button class="btn btn-share" onclick="window.location.href='billing.html'">
+                <i class="fas fa-arrow-left"></i> Back to Billing
+            </button>
+            <button class="btn btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
         </div>
     </div>
 
     <script>
-        const bill = JSON.parse(localStorage.getItem("printBill"));
+        const bill = JSON.parse(localStorage.getItem('printBill'));
 
         if (bill) {
-            document.title = `Bill ${bill.billNo}`; // For PDF filename
-            document.getElementById("info").innerText =
-                `Bill: ${bill.billNo} \n Table: ${bill.tableNo} | ${bill.date}`;
+            // Set bill info
+            document.getElementById('billNo').textContent = `Bill #${bill.billNo}`;
+            document.getElementById('billMeta').textContent = `Table ${bill.tableNo} | ${bill.date || new Date(bill.timestamp).toLocaleDateString()}`;
 
-            const itemsDiv = document.getElementById("items");
+            // Populate items
+            const itemsList = document.getElementById('billItemsList');
+            let itemsHtml = '';
+            let total = 0;
 
-            bill.items.forEach(i => {
-                itemsDiv.innerHTML += `
-          <div class="row">
-            <span>${i.name} <span style="font-size:11px; color:#888;">x${i.qty}</span></span>
-            <span>₹${i.price * i.qty}</span>
-          </div>
-        `;
-            });
+            if (bill.items && bill.items.length > 0) {
+                bill.items.forEach(item => {
+                    const itemTotal = (item.price || 0) * item.qty;
+                    total += itemTotal;
+                    itemsHtml += `
+                        <div class="bill-item">
+                            <span class="item-left">${item.name}</span>
+                            <span class="item-qty">×${item.qty}</span>
+                            <span class="item-price">₹${itemTotal.toFixed(0)}</span>
+                        </div>
+                    `;
+                });
+            }
 
-            document.getElementById("total").innerText = "₹" + bill.total;
+            itemsList.innerHTML = itemsHtml;
+            document.getElementById('totalAmount').textContent = '₹' + (bill.total || total).toFixed(0);
+
+            // Also update preview
+            document.getElementById('billPreview').innerHTML = `
+                <div style="padding: 16px; background: #f0f0f0; border-radius: 8px; font-size: 12px; margin-top: 16px;">
+                    <p style="margin-bottom: 8px; font-weight: 600;">Bill Preview</p>
+                    ${bill.items.map(item => `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>${item.name} ×${item.qty}</span>
+                            <span>₹${(item.price * item.qty).toFixed(0)}</span>
+                        </div>
+                    `).join('')}
+                    <div style="border-top: 1px solid #ddd; margin: 8px 0; padding-top: 8px; font-weight: 600;">
+                        Total: ₹${(bill.total || total).toFixed(0)}
+                    </div>
+                </div>
+            `;
         } else {
-            document.body.innerHTML = "<p style='text-align:center; margin-top:50px;'>No bill found.</p>";
+            document.querySelector('.bill-container').innerHTML = `
+                <div class="empty-message">
+                    <div class="empty-icon">❌</div>
+                    <h3>No bill found</h3>
+                    <p>Please generate a bill from the billing page</p>
+                </div>
+            `;
+            document.getElementById('actions').style.display = 'none';
         }
 
         function shareBill() {
-            if (navigator.share) {
+            if (navigator.share && bill) {
                 navigator.share({
-                    title: "Chef Cafe Bill",
-                    text: `Table ${bill.tableNo} - Total: ₹${bill.total} \nThank you for dining!`,
+                    title: 'Chef Cafe Bill',
+                    text: `Bill #${bill.billNo} - Table ${bill.tableNo}\nTotal: ₹${bill.total}\n\nThank you for dining!`,
                     url: window.location.href
-                }).catch(console.error);
+                }).catch(err => console.log('Share cancelled'));
             } else {
-                alert("Sharing not supported on this device/browser.");
+                alert('Sharing not supported. Please use Print option.');
             }
-        }
-
-        function goBackToBilling() {
-            window.location.href = "admin.html#billing";
         }
     </script>
 

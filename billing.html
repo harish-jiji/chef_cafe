@@ -3,347 +3,411 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Billing Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Billing - Chef Cafe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --success: #10b981;
-            --danger: #ef4444;
-            --bg: #f3f4f6;
-            --surface: #ffffff;
-            --text: #1f2937;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
+            --primary: #FF6B35;
+            --secondary: #1a1a2e;
+            --light: #f8f9fa;
+            --border: #ddd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
             padding: 20px;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* NAVBAR STYLES */
+        .navbar {
+            background: linear-gradient(135deg, var(--secondary) 0%, #334155 100%);
+            padding: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
             margin-bottom: 24px;
         }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            padding: 10px 20px;
-            border: none;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-muted);
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--surface);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-            border-left: 5px solid transparent;
-        }
-
-        .card.draft {
-            border-left-color: #f59e0b;
-        }
-
-        .card.paid {
-            border-left-color: var(--success);
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
+        .navbar-top {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .table-badge {
-            background: #e0e7ff;
-            color: var(--primary-dark);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .status-badge {
-            font-size: 11px;
-            text-transform: uppercase;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        .status-draft {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .status-paid {
-            background: #d1fae5;
-            color: #059669;
-        }
-
-        .card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 16px 0;
-            color: var(--text-muted);
-            font-size: 14px;
-            max-height: 100px;
-            overflow-y: hidden;
-        }
-
-        .btn-edit {
-            width: 100%;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            padding: 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-edit:hover {
-            background: #e5e7eb;
-        }
-
-        /* MODAL */
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
             align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(2px);
+            padding: 16px 20px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        .modal-content {
-            background: white;
-            width: 90%;
-            max-width: 500px;
-            border-radius: 16px;
-            padding: 24px;
-            max-height: 90vh;
-            overflow-y: auto;
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+
+        .navbar-brand i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn.section {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .nav-btn.section:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .nav-btn.section.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        /* BILLING LAYOUT */
+        .billing-container {
+            display: grid;
+            gap: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 769px) {
+            .billing-container {
+                grid-template-columns: 350px 1fr;
+                align-items: start;
+            }
+        }
+
+        /* LEFT: BILLING FORM */
+        .billing-form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Item Dropdown */
+        .item-select {
             position: relative;
         }
 
-        .close-modal {
+        .dropdown {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #ddd;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 6px 6px;
+        }
+
+        .dropdown div {
+            padding: 10px;
             cursor: pointer;
-            font-size: 20px;
-            color: #999;
+            border-bottom: 1px solid #f9f9f9;
+            font-size: 14px;
         }
 
-        .edit-items-list {
-            margin: 20px 0;
+        .dropdown div:hover {
+            background: #f2f2f2;
         }
 
-        .edit-item-row {
+        .dropdown.hidden {
+            display: none;
+        }
+
+        /* RIGHT: LIVE BILL */
+        .billing-bill {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .05);
+            border: 1px solid #eee;
+        }
+
+        .bill-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .bill-header-row h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .bill-items-container {
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .bill-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
         }
 
-        .qty-controls {
+        .bill-total-row {
+            border-top: 2px solid #333;
+            padding-top: 15px;
             display: flex;
-            align-items: center;
-            gap: 8px;
+            justify-content: space-between;
+            font-size: 1.5em;
+            font-weight: bold;
         }
 
-        .qty-btn {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            background: #fff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .action-bar {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .final-price-section {
-            background: #f0fdf4;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #bbf7d0;
-            margin-top: 20px;
-        }
-
-        .full-btn {
+        .primary-btn {
             width: 100%;
             padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn:hover {
+            background: #5a6fd6;
+        }
+
+        .success-btn {
+            flex: 1;
+            padding: 15px;
+            background: #10b981;
+            color: white;
             border: none;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
+        .success-btn:hover {
+            background: #059669;
         }
 
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-outline {
-            background: white;
-            border: 1px solid var(--border);
-        }
-
-        /* Suggestions for item add in modal */
-        .add-item-box {
-            position: relative;
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .suggestions-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 70%;
-            background: white;
-            border: 1px solid #ddd;
-            z-index: 10;
-            display: none;
-        }
-
-        .suggestion-row {
-            padding: 8px;
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
             cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-
-        .suggestion-row:hover {
-            background: #f9f9f9;
+            font-size: 16px;
+            margin-left: 10px;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h3>Billing Dashboard</h3>
-            <a href="index.html" style="text-decoration:none; color:var(--primary); font-weight:600;">Go Home</a>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navbar-top">
+            <a href="admin.html" class="navbar-brand">
+                <i class="fas fa-utensils"></i>
+                Chef Cafe
+            </a>
+            <div class="navbar-menu">
+                <button class="nav-btn" id="logoutBtn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
         </div>
 
-        <div class="tabs">
-            <button class="tab-btn active" onclick="setFilter('DRAFT')">Active Drafts</button>
-            <button class="tab-btn" onclick="setFilter('PAID')">Paid Bills</button>
-        </div>
-
-        <div id="billGrid" class="grid">
-            <!-- Cards go here -->
+        <div class="admin-nav">
+            <button class="nav-btn section" onclick="window.location.href='admin.html'">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </button>
+            <button class="nav-btn section" onclick="window.location.href='admin.html'">
+                <i class="fas fa-book"></i> Menu
+            </button>
+            <button class="nav-btn section active" onclick="window.location.reload()">
+                <i class="fas fa-receipt"></i> Billing
+            </button>
+            <button class="nav-btn section" onclick="window.location.href='order.html'">
+                <i class="fas fa-clipboard-list"></i> New Order
+            </button>
+            <button class="nav-btn section" onclick="window.location.href='history.html'">
+                <i class="fas fa-history"></i> History
+            </button>
         </div>
     </div>
 
-    <!-- EDIT / VIEW MODAL -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h3 id="modalTitle">Edit Draft</h3>
-            <p id="modalSubtitle" style="color:gray; font-size:13px;"></p>
-            <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+    <!-- MAIN CONTENT -->
+    <div class="billing-container">
 
-            <!-- Add Item Section (Only for Drafts) -->
-            <div id="addItemSection">
-                <div class="add-item-box">
-                    <input type="text" id="modalSearch" placeholder="Add item..."
-                        style="flex:2; padding:8px; border:1px solid #ddd; border-radius:6px;">
-                    <button class="btn-primary" onclick="modalAddItem()"
-                        style="flex:1; border:none; border-radius:6px;">Add</button>
-                    <div id="modalSuggestions" class="suggestions-dropdown"></div>
+        <!-- LEFT: INPUTS -->
+        <div class="billing-form">
+            <div class="form-group">
+                <label>Table Number</label>
+                <input type="number" id="tableInput" class="form-control" placeholder="Enter Table No">
+            </div>
+
+            <div class="form-group item-select">
+                <label>Item Search</label>
+                <input type="text" id="itemSearch" class="form-control" placeholder="Search item..." autocomplete="off">
+                <div id="itemDropdown" class="dropdown hidden"></div>
+            </div>
+
+            <div class="form-group input-row">
+                <div>
+                    <label>Price</label>
+                    <input type="text" id="priceInput" class="form-control" placeholder="Price">
+                    <!-- Manual Price Box -->
+                    <div id="manualPriceBox"
+                        style="display:none; margin-top:6px; background:#fff8e1; padding:5px; border-radius:4px; border:1px solid #ffebb0;">
+                        <label style="font-size:11px; display:block; color:#856404; font-weight:bold;">Enter Final
+                            Price</label>
+                        <input type="number" id="finalPriceInput" class="form-control mt-1" placeholder="e.g. 150">
+                    </div>
+                </div>
+                <div>
+                    <label>Qty</label>
+                    <input type="number" id="qtyInput" class="form-control" value="1" min="1">
                 </div>
             </div>
 
-            <!-- Items List -->
-            <div id="modalItems" class="edit-items-list"></div>
+            <button onclick="addItemToBill()" class="primary-btn">
+                Add to Bill
+            </button>
+        </div>
 
-            <!-- Actions -->
-            <div class="action-bar">
-                <button id="saveDraftBtn" class="full-btn btn-primary" onclick="updateDraft()">💾 Save Changes</button>
+        <!-- RIGHT: LIVE BILL -->
+        <div class="billing-bill">
+            <div class="bill-header-row">
+                <h3>Current Bill</h3>
+            </div>
 
-                <!-- Convert to Bill Section -->
-                <div id="finalizeSection" class="final-price-section">
-                    <label
-                        style="display:block; font-size:12px; font-weight:bold; color:#059669; margin-bottom:5px;">FINALIZE
-                        BILL TOTAL</label>
-                    <input type="number" id="finalTotal" placeholder="Enter Total Amount (₹)"
-                        style="width:100%; padding:10px; font-size:18px; border:2px solid #10b981; border-radius:6px; margin-bottom:10px;">
-                    <button class="full-btn btn-success" onclick="finalizeBill()">✅ Save & Set as PAID</button>
-                </div>
+            <div id="billItems" class="bill-items-container">
+                <p style="color:#999; text-align:center; padding-top:50px;">No items added</p>
+            </div>
+
+            <div class="bill-total-row">
+                <span>Grand Total:</span>
+                <span><span id="billTotal">₹0</span></span>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="saveBillOnly()" class="success-btn">
+                    ✅ Save & Preview
+                </button>
             </div>
         </div>
+
     </div>
 
+    <!-- SCRIPTS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+        import {
+            getFirestore, collection, addDoc, updateDoc, doc, getDoc, setDoc, increment, onSnapshot
+        } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-        // Same config as order.html
         const firebaseConfig = {
             apiKey: "AIzaSyAON6aij8dNGoRlJ1DdLcwMkPZsAGe-SBQ",
             authDomain: "chef-s-cafe.firebaseapp.com",
@@ -357,253 +421,274 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Redirect if not logged in
+        let currentBill = {
+            tableNo: null,
+            items: [],
+            total: 0
+        };
+
+        let menuItemsArray = [];
+
         onAuthStateChanged(auth, user => {
             if (!user) {
-                window.location.href = 'admin.html';
-            }
-        });
-
-        let currentFilter = 'DRAFT';
-        let activeDocId = null;
-        let activeItems = [];
-        let menuItems = [];
-
-        // Load Menu for Autocomplete
-        getDocs(collection(db, "menu_items")).then(snap => {
-            menuItems = snap.docs.map(d => d.data());
-        });
-
-        // Setup Realtime Listener
-        let unsubscribe = null;
-
-        window.setFilter = (status) => {
-            currentFilter = status;
-
-            // UI Toggle
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                if (b.textContent.includes("Draft") && status === 'DRAFT') b.classList.add('active');
-                else if (b.textContent.includes("Paid") && status === 'PAID') b.classList.add('active');
-                else b.classList.remove('active');
-            });
-
-            loadBills();
-        };
-
-        function loadBills() {
-            if (unsubscribe) unsubscribe();
-
-            const q = query(collection(db, "bills"), where("status", "==", currentFilter));
-
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                const grid = document.getElementById('billGrid');
-                grid.innerHTML = '';
-
-                if (snapshot.empty) {
-                    grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#999;">No bills found.</p>';
-                }
-
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const topItems = data.items.slice(0, 3).map(i => `<li>${i.name} x${i.qty}</li>`).join('');
-                    const moreCount = data.items.length > 3 ? `<li>+${data.items.length - 3} more...</li>` : '';
-
-                    const card = document.createElement('div');
-                    card.className = `card ${currentFilter === 'DRAFT' ? 'draft' : 'paid'}`;
-                    card.innerHTML = `
-                        <div class="card-header">
-                            <div>
-                                <span class="table-badge">Table ${data.tableNo}</span>
-                                <span style="font-size:12px; color:#666; margin-left:5px;">#${data.billNo}</span>
-                            </div>
-                            <span class="status-badge status-${data.status.toLowerCase()}">${data.status}</span>
-                        </div>
-                        <ul>${topItems}${moreCount}</ul>
-                        ${currentFilter === 'PAID' ? `<div style="font-weight:bold; margin-bottom:10px;">Total: ₹${data.total}</div>` : ''}
-                        <button class="btn-edit" onclick="openEdit('${docSnap.id}')">
-                            ${currentFilter === 'DRAFT' ? '✏️ Edit / Finalize' : '👁 View Details'}
-                        </button>
-                    `;
-                    grid.appendChild(card);
-                });
-            }, (error) => {
-                console.error("Error fetching bills:", error);
-                const grid = document.getElementById('billGrid');
-                if (grid) {
-                    if (error.code === 'permission-denied') {
-                        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#ef4444;">Legacy Access Denied. Please login again or check permissions.</p>';
-                    } else {
-                        grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#ef4444;">Error: ${error.message}</p>`;
-                    }
-                }
-            });
-        }
-
-        // EDIT LOGIC
-        window.openEdit = (id) => {
-            activeDocId = id;
-            // Get current data from local (or fetch) - since we have realtime, we can just fetch once or find in cache.
-            // Simplified: Just fetch fresh doc to be safe
-            import("https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js").then(({ getDoc, doc }) => {
-                getDoc(doc(db, "bills", id)).then(snap => {
-                    const data = snap.data();
-                    activeItems = [...data.items]; // Clone
-
-                    document.getElementById('modalTitle').textContent = `Bill #${data.billNo}`;
-                    document.getElementById('modalSubtitle').textContent = `Table ${data.tableNo} | ${data.status}`;
-
-                    renderModalItems(data.status === 'PAID');
-
-                    // Show/Hide sections based on status
-                    if (data.status === 'PAID') {
-                        document.getElementById('addItemSection').style.display = 'none';
-                        document.getElementById('saveDraftBtn').style.display = 'none';
-                        document.getElementById('finalizeSection').style.display = 'none';
-                    } else {
-                        document.getElementById('addItemSection').style.display = 'block';
-                        document.getElementById('saveDraftBtn').style.display = 'block';
-                        document.getElementById('finalizeSection').style.display = 'block';
-                        document.getElementById('finalTotal').value = '';
-                    }
-
-                    document.getElementById('editModal').style.display = 'flex';
-                });
-            });
-        };
-
-        window.closeModal = () => {
-            document.getElementById('editModal').style.display = 'none';
-        };
-
-        function renderModalItems(isLocked) {
-            const container = document.getElementById('modalItems');
-            container.innerHTML = '';
-
-            activeItems.forEach((item, idx) => {
-                const row = document.createElement('div');
-                row.className = 'edit-item-row';
-
-                if (isLocked) {
-                    row.innerHTML = `
-                       <span>${item.name}</span>
-                       <strong>x${item.qty}</strong>
-                   `;
-                } else {
-                    // Editable Row
-                    row.innerHTML = `
-                       <span>${item.name}</span>
-                       <div class="qty-controls">
-                           <div class="qty-btn" onclick="changeQty(${idx}, -1)">-</div>
-                           <span style="width:20px; text-align:center;">${item.qty}</span>
-                           <div class="qty-btn" onclick="changeQty(${idx}, 1)">+</div>
-                           <div class="qty-btn" style="border-color:#faa; color:red;" onclick="removeItem(${idx})">🗑</div>
-                       </div>
-                   `;
-                }
-                container.appendChild(row);
-            });
-        }
-
-        window.changeQty = (idx, delta) => {
-            activeItems[idx].qty += delta;
-            if (activeItems[idx].qty < 1) activeItems[idx].qty = 1;
-            renderModalItems(false);
-        };
-
-        window.removeItem = (idx) => {
-            activeItems.splice(idx, 1);
-            renderModalItems(false);
-        };
-
-        // Modal Add Item
-        window.modalAddItem = () => {
-            const input = document.getElementById('modalSearch');
-            const name = input.value;
-            if (!name) return;
-
-            activeItems.push({ name, qty: 1 });
-            input.value = '';
-            renderModalItems(false);
-        }
-
-        // Autocomplete
-        document.getElementById('modalSearch').addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase();
-            const box = document.getElementById('modalSuggestions');
-            box.innerHTML = '';
-
-            if (val.length < 1) { box.style.display = 'none'; return; }
-
-            const matches = menuItems.filter(m => m.name.toLowerCase().includes(val));
-            if (matches.length > 0) {
-                box.style.display = 'block';
-                matches.forEach(m => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-row';
-                    div.textContent = m.name;
-                    div.onclick = () => {
-                        document.getElementById('modalSearch').value = m.name;
-                        box.style.display = 'none';
-                    };
-                    box.appendChild(div);
-                });
+                window.location.href = "admin.html";
             } else {
-                box.style.display = 'none';
+                loadMenuForBilling();
             }
         });
 
-        // --- ACTIONS ---
+        window.logout = () => {
+            signOut(auth).then(() => {
+                window.location.href = 'admin.html';
+            });
+        };
 
-        // Step 3: Update Draft (No price)
-        window.updateDraft = async () => {
-            if (!activeDocId) return;
-            try {
-                await updateDoc(doc(db, "bills", activeDocId), {
-                    items: activeItems
+        // --- BILLING LOGIC ---
+
+        function isNumericPrice(price) {
+            return !isNaN(Number(price)) && price !== "";
+        }
+
+        function loadMenuForBilling() {
+            onSnapshot(collection(db, "menu_items"), snap => {
+                menuItemsArray = [];
+                snap.forEach(doc => {
+                    menuItemsArray.push(doc.data());
                 });
-                closeModal();
-                // Notification could go here
-            } catch (e) {
-                console.error(e);
-                alert("Error updating draft");
+            });
+
+            const searchInput = document.getElementById("itemSearch");
+            const dropdown = document.getElementById("itemDropdown");
+
+            if (searchInput && dropdown) {
+                searchInput.addEventListener("input", () => {
+                    const q = searchInput.value.toLowerCase();
+                    dropdown.innerHTML = "";
+
+                    if (!q) {
+                        dropdown.classList.add("hidden");
+                        return;
+                    }
+
+                    const matches = menuItemsArray.filter(item =>
+                        item.name.toLowerCase().includes(q)
+                    );
+
+                    if (matches.length === 0) {
+                        dropdown.classList.add("hidden");
+                        return;
+                    }
+
+                    matches.forEach(item => {
+                        const div = document.createElement("div");
+                        div.textContent = item.name;
+                        div.onclick = () => selectItem(item);
+                        dropdown.appendChild(div);
+                    });
+
+                    dropdown.classList.remove("hidden");
+                });
+
+                document.addEventListener("click", (e) => {
+                    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.classList.add("hidden");
+                    }
+                });
+            }
+        }
+
+        function selectItem(item) {
+            const searchInput = document.getElementById("itemSearch");
+            const priceInput = document.getElementById("priceInput");
+            const manualBox = document.getElementById("manualPriceBox");
+            const dropdown = document.getElementById("itemDropdown");
+
+            searchInput.value = item.name;
+            priceInput.value = item.price;
+
+            if (isNumericPrice(item.price)) {
+                manualBox.style.display = "none";
+            } else {
+                manualBox.style.display = "block";
+                document.getElementById("finalPriceInput").value = "";
+                document.getElementById("finalPriceInput").focus();
+            }
+
+            dropdown.classList.add("hidden");
+        }
+
+        window.addItemToBill = function () {
+            const nameInput = document.getElementById("itemSearch");
+            const qtyInput = document.getElementById("qtyInput");
+            const priceInput = document.getElementById("priceInput");
+            const tableInput = document.getElementById("tableInput");
+            const finalPriceInput = document.getElementById("finalPriceInput");
+
+            const name = nameInput.value.trim();
+            const qty = Number(qtyInput.value);
+            let price = priceInput.value;
+
+            if (!name) return alert("Please search/select an item");
+            if (!price) return alert("Please enter price");
+
+            if (!isNumericPrice(price)) {
+                const manualPrice = Number(finalPriceInput.value);
+                if (!manualPrice || manualPrice <= 0) {
+                    alert("Please enter the final price for this item");
+                    return;
+                }
+                price = manualPrice;
+            }
+
+            // Set table no if first item (optional enforcement)
+            currentBill.tableNo = tableInput.value;
+
+            currentBill.items.push({
+                name,
+                qty,
+                price: Number(price)
+            });
+
+            renderBillItems();
+
+            nameInput.value = "";
+            qtyInput.value = 1;
+            priceInput.value = "";
+            finalPriceInput.value = "";
+            document.getElementById("manualPriceBox").style.display = "none";
+            nameInput.focus();
+        };
+
+        function renderBillItems() {
+            const container = document.getElementById("billItems");
+            if (!container) return;
+
+            container.innerHTML = "";
+
+            if (currentBill.items.length === 0) {
+                container.innerHTML = "<p style='color:#999; text-align:center; padding-top:50px;'>No items added</p>";
+            } else {
+                currentBill.items.forEach((item, index) => {
+                    container.innerHTML += `
+                      <div class="bill-row">
+                        <span style="flex:2; font-weight:500;">${item.name}</span>
+                        <div style="flex:1; text-align:center;">
+                            <input type="number" min="1" value="${item.qty}"
+                              onchange="updateQty(${index}, this.value)"
+                              style="width:50px; padding:4px; text-align:center; border:1px solid #ddd; border-radius:4px;">
+                        </div>
+                        <span style="flex:1; text-align:right;">₹${item.price}</span>
+                        <button onclick="removeItem(${index})" class="remove-btn">✖</button>
+                      </div>
+                    `;
+                });
+            }
+
+            recalculateBill();
+        }
+
+        window.updateQty = function (index, newQty) {
+            const q = Number(newQty);
+            if (q > 0) {
+                currentBill.items[index].qty = q;
+                recalculateBill();
             }
         };
 
-        // Step 4: Convert to Bill (Add Price + Change Status)
-        window.finalizeBill = async () => {
-            const totalStr = document.getElementById('finalTotal').value;
-            const total = Number(totalStr);
-
-            if (!total || total <= 0) {
-                alert("Please enter a valid Total Amount to finalize.");
-                return;
-            }
-
-            if (!confirm("Are you sure? This will lock the bill.")) return;
-
-            try {
-                // Ensure items are also updated in case edits were made
-                await updateDoc(doc(db, "bills", activeDocId), {
-                    items: activeItems,
-                    total: total,
-                    status: "PAID",
-                    timestamp: Date.now(),
-                    date: new Date().toISOString().split("T")[0]
-                });
-                closeModal();
-            } catch (e) {
-                console.error(e);
-                alert("Error finalizing bill");
-            }
+        window.removeItem = function (index) {
+            currentBill.items.splice(index, 1);
+            renderBillItems();
         };
 
-        // Initialize
-        loadBills();
+        function recalculateBill() {
+            let total = 0;
+            currentBill.items.forEach(item => {
+                const p = Number(item.price);
+                if (!isNaN(p)) {
+                    total += p * item.qty;
+                }
+            });
+            currentBill.total = total;
+            document.getElementById("billTotal").innerText = "₹" + total;
+        }
 
-        // Make functions global for inline onclicks
-        window.changeQty = window.changeQty;
+        async function saveBillData() {
+            if (!currentBill.tableNo || currentBill.items.length === 0) {
+                alert("Incomplete bill: Need Table No and Items");
+                throw new Error("Incomplete bill");
+            }
+
+            const now = Date.now();
+            const dateStr = new Date().toISOString().split("T")[0];
+
+            function generateBillNo() {
+                const n = new Date();
+                const d = n.toISOString().slice(0, 10).replace(/-/g, "");
+                return { billNoPrefix: `B-${d}` };
+            }
+
+            const { billNoPrefix } = generateBillNo();
+            const counterRef = doc(db, "counters", billNoPrefix);
+            let billNo;
+
+            try {
+                await updateDoc(counterRef, { count: increment(1) });
+                const snap = await getDoc(counterRef);
+                const count = snap.data().count;
+                billNo = `${billNoPrefix}-${String(count).padStart(3, '0')}`;
+            } catch (err) {
+                await setDoc(counterRef, { count: 1 });
+                billNo = `${billNoPrefix}-001`;
+            }
+
+            const billData = {
+                billNo: billNo,
+                tableNo: currentBill.tableNo,
+                items: currentBill.items,
+                total: currentBill.total,
+                status: "PAID",
+                timestamp: now,
+                date: dateStr
+            };
+
+            await addDoc(collection(db, "bills"), billData);
+            return billData;
+        }
+
+        window.saveBillOnly = async function () {
+            try {
+                const btn = event ? (event.target || event.srcElement) : null;
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerText = "⏳ Saving...";
+                }
+
+                const billData = await saveBillData();
+                localStorage.setItem("printBill", JSON.stringify(billData));
+
+                // Redirect to print page directly as per functionality implied in previous code
+                window.open('print_bill.html', '_blank');
+
+                // Clear form
+                currentBill = { tableNo: null, items: [], total: 0 };
+                renderBillItems();
+                document.getElementById("tableInput").value = "";
+                document.getElementById("itemSearch").value = "";
+                document.getElementById("qtyInput").value = 1;
+                document.getElementById("priceInput").value = "";
+                document.getElementById("billTotal").innerText = "₹0";
+
+            } catch (e) {
+                console.error(e);
+            } finally {
+                const btn = event ? (event.target || event.srcElement) : null;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "✅ Save & Preview";
+                }
+            }
+        };
     </script>
-
 </body>
 
 </html>
