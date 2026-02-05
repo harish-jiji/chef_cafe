@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Bill for Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .bill-container {
+            max-width: 350px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .center {
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+            font-size: 14px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px dashed #ccc;
+            margin: 15px 0;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-share {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-print {
+            background: #10b981;
+            color: white;
+        }
+
+        .back-btn {
+            background: #eee;
+            border: none;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+
+        .back-btn:hover {
+            background: #e0e0e0;
+        }
+
+        /* PRINT STYLES - THERMAL PRINTER OPTIMIZED */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+
+            /* Hide everything except bill */
+            body * {
+                visibility: hidden;
+            }
+
+            #billPrintArea,
+            #billPrintArea * {
+                visibility: visible;
+            }
+
+            #billPrintArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 58mm;
+                /* 🔥 KEY PART */
+                padding: 4mm;
+                font-family: monospace;
+                font-size: 12px;
+                line-height: 1.4;
+            }
+
+            @page {
+                size: 58mm auto;
+                /* 🔥 Thermal paper */
+                margin: 0;
+            }
+
+            .bill-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                width: auto;
+            }
+
+            .actions,
+            .back-btn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="back-btn" onclick="goBackToBilling()">← Back to Billing</button>
+
+    <div class="bill-container">
+        <!-- WRAPPER FOR PRINTING -->
+        <div id="billPrintArea">
+            <h3 class="center" style="margin-bottom:5px">Chef Cafe</h3>
+            <p id="info" style="text-align:center; font-size:12px; color:#333; margin-top:0"></p>
+            <hr>
+
+            <div id="items"></div>
+
+            <hr>
+            <div class="row" style="font-size:16px;">
+                <strong>Total</strong>
+                <strong id="total"></strong>
+            </div>
+
+            <p style="text-align:center; font-size:12px; margin-top:20px;">Thank you for dining!</p>
+        </div>
+
+        <div class="actions">
+            <button class="btn-share" onclick="shareBill()">🔗 Share</button>
+            <button class="btn-print" onclick="window.print()">🖨 Print</button>
+        </div>
+    </div>
+
+    <script>
+        const bill = JSON.parse(localStorage.getItem("printBill"));
+
+        if (bill) {
+            document.title = `Bill ${bill.billNo}`; // For PDF filename
+            document.getElementById("info").innerText =
+                `Bill: ${bill.billNo} \n Table: ${bill.tableNo} | ${bill.date}`;
+
+            const itemsDiv = document.getElementById("items");
+
+            bill.items.forEach(i => {
+                itemsDiv.innerHTML += `
+          <div class="row">
+            <span>${i.name} <span style="font-size:11px; color:#888;">x${i.qty}</span></span>
+            <span>₹${i.price * i.qty}</span>
+          </div>
+        `;
+            });
+
+            document.getElementById("total").innerText = "₹" + bill.total;
+        } else {
+            document.body.innerHTML = "<p style='text-align:center; margin-top:50px;'>No bill found.</p>";
+        }
+
+        function shareBill() {
+            if (navigator.share) {
+                navigator.share({
+                    title: "Chef Cafe Bill",
+                    text: `Table ${bill.tableNo} - Total: ₹${bill.total} \nThank you for dining!`,
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                alert("Sharing not supported on this device/browser.");
+            }
+        }
+
+        function goBackToBilling() {
+            window.location.href = "admin.html#billing";
+        }
+    </script>
+
+</body>
+
+</html>

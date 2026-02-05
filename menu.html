@@ -252,6 +252,12 @@
       `;
             });
 
+        }, (error) => {
+            console.error("Menu fetch error:", error);
+            // Optional: Show error to user, but for menu we might just log it as it's public
+            if (error.code === 'permission-denied') {
+                console.warn("User does not have permission to view menu items");
+            }
         });
     </script>
 

@@ -1,202 +1,607 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Bill for Table</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f3f4f6;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+        }
+
         body {
-            font-family: monospace;
-            background: #f5f5f5;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
         }
 
-        .bill-container {
-            max-width: 350px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .center {
-            text-align: center;
-            margin-top: 0;
-        }
-
-        .row {
+        .header {
             display: flex;
             justify-content: space-between;
-            margin: 6px 0;
-            font-size: 14px;
+            align-items: center;
+            margin-bottom: 24px;
         }
 
-        hr {
-            border: none;
-            border-top: 1px dashed #ccc;
-            margin: 15px 0;
-        }
-
-        .actions {
+        .tabs {
             display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-bottom: 20px;
         }
 
-        button {
-            flex: 1;
-            padding: 10px;
+        .tab-btn {
+            padding: 10px 20px;
             border: none;
-            border-radius: 6px;
+            background: white;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            border-left: 5px solid transparent;
+        }
+
+        .card.draft {
+            border-left-color: #f59e0b;
+        }
+
+        .card.paid {
+            border-left-color: var(--success);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .table-badge {
+            background: #e0e7ff;
+            color: var(--primary-dark);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
             font-weight: bold;
         }
 
-        .btn-share {
-            background: #3b82f6;
-            color: white;
+        .status-draft {
+            background: #fef3c7;
+            color: #d97706;
         }
 
-        .btn-print {
-            background: #10b981;
-            color: white;
+        .status-paid {
+            background: #d1fae5;
+            color: #059669;
         }
 
-        .back-btn {
-            background: #eee;
-            border: none;
-            padding: 8px 12px;
-            margin-bottom: 12px;
-            border-radius: 6px;
+        .card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 16px 0;
+            color: var(--text-muted);
             font-size: 14px;
-            cursor: pointer;
+            max-height: 100px;
+            overflow-y: hidden;
+        }
+
+        .btn-edit {
             width: 100%;
-            text-align: left;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
         }
 
-        .back-btn:hover {
-            background: #e0e0e0;
+        .btn-edit:hover {
+            background: #e5e7eb;
         }
 
-        /* PRINT STYLES - THERMAL PRINTER OPTIMIZED */
-        @media print {
-            body {
-                margin: 0;
-                padding: 0;
-                background: white;
-            }
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
 
-            /* Hide everything except bill */
-            body * {
-                visibility: hidden;
-            }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 16px;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
 
-            #billPrintArea,
-            #billPrintArea * {
-                visibility: visible;
-            }
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #999;
+        }
 
-            #billPrintArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 58mm;
-                /* 🔥 KEY PART */
-                padding: 4mm;
-                font-family: monospace;
-                font-size: 12px;
-                line-height: 1.4;
-            }
+        .edit-items-list {
+            margin: 20px 0;
+        }
 
-            @page {
-                size: 58mm auto;
-                /* 🔥 Thermal paper */
-                margin: 0;
-            }
+        .edit-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
 
-            .bill-container {
-                box-shadow: none;
-                margin: 0;
-                padding: 0;
-                width: auto;
-            }
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-            .actions,
-            .back-btn {
-                display: none !important;
-            }
+        .qty-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-bar {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .final-price-section {
+            background: #f0fdf4;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #bbf7d0;
+            margin-top: 20px;
+        }
+
+        .full-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--border);
+        }
+
+        /* Suggestions for item add in modal */
+        .add-item-box {
+            position: relative;
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 70%;
+            background: white;
+            border: 1px solid #ddd;
+            z-index: 10;
+            display: none;
+        }
+
+        .suggestion-row {
+            padding: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .suggestion-row:hover {
+            background: #f9f9f9;
         }
     </style>
 </head>
 
 <body>
 
-    <button class="back-btn" onclick="goBackToBilling()">← Back to Billing</button>
-
-    <div class="bill-container">
-        <!-- WRAPPER FOR PRINTING -->
-        <div id="billPrintArea">
-            <h3 class="center" style="margin-bottom:5px">Chef Cafe</h3>
-            <p id="info" style="text-align:center; font-size:12px; color:#333; margin-top:0"></p>
-            <hr>
-
-            <div id="items"></div>
-
-            <hr>
-            <div class="row" style="font-size:16px;">
-                <strong>Total</strong>
-                <strong id="total"></strong>
-            </div>
-
-            <p style="text-align:center; font-size:12px; margin-top:20px;">Thank you for dining!</p>
+    <div class="container">
+        <div class="header">
+            <h3>Billing Dashboard</h3>
+            <a href="index.html" style="text-decoration:none; color:var(--primary); font-weight:600;">Go Home</a>
         </div>
 
-        <div class="actions">
-            <button class="btn-share" onclick="shareBill()">🔗 Share</button>
-            <button class="btn-print" onclick="window.print()">🖨 Print</button>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="setFilter('DRAFT')">Active Drafts</button>
+            <button class="tab-btn" onclick="setFilter('PAID')">Paid Bills</button>
+        </div>
+
+        <div id="billGrid" class="grid">
+            <!-- Cards go here -->
         </div>
     </div>
 
-    <script>
-        const bill = JSON.parse(localStorage.getItem("printBill"));
+    <!-- EDIT / VIEW MODAL -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">Edit Draft</h3>
+            <p id="modalSubtitle" style="color:gray; font-size:13px;"></p>
+            <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
 
-        if (bill) {
-            document.title = `Bill ${bill.billNo}`; // For PDF filename
-            document.getElementById("info").innerText =
-                `Bill: ${bill.billNo} \n Table: ${bill.tableNo} | ${bill.date}`;
+            <!-- Add Item Section (Only for Drafts) -->
+            <div id="addItemSection">
+                <div class="add-item-box">
+                    <input type="text" id="modalSearch" placeholder="Add item..."
+                        style="flex:2; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                    <button class="btn-primary" onclick="modalAddItem()"
+                        style="flex:1; border:none; border-radius:6px;">Add</button>
+                    <div id="modalSuggestions" class="suggestions-dropdown"></div>
+                </div>
+            </div>
 
-            const itemsDiv = document.getElementById("items");
+            <!-- Items List -->
+            <div id="modalItems" class="edit-items-list"></div>
 
-            bill.items.forEach(i => {
-                itemsDiv.innerHTML += `
-          <div class="row">
-            <span>${i.name} <span style="font-size:11px; color:#888;">x${i.qty}</span></span>
-            <span>₹${i.price * i.qty}</span>
-          </div>
-        `;
+            <!-- Actions -->
+            <div class="action-bar">
+                <button id="saveDraftBtn" class="full-btn btn-primary" onclick="updateDraft()">💾 Save Changes</button>
+
+                <!-- Convert to Bill Section -->
+                <div id="finalizeSection" class="final-price-section">
+                    <label
+                        style="display:block; font-size:12px; font-weight:bold; color:#059669; margin-bottom:5px;">FINALIZE
+                        BILL TOTAL</label>
+                    <input type="number" id="finalTotal" placeholder="Enter Total Amount (₹)"
+                        style="width:100%; padding:10px; font-size:18px; border:2px solid #10b981; border-radius:6px; margin-bottom:10px;">
+                    <button class="full-btn btn-success" onclick="finalizeBill()">✅ Save & Set as PAID</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+        // Same config as order.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyAON6aij8dNGoRlJ1DdLcwMkPZsAGe-SBQ",
+            authDomain: "chef-s-cafe.firebaseapp.com",
+            projectId: "chef-s-cafe",
+            storageBucket: "chef-s-cafe.firebasestorage.app",
+            messagingSenderId: "623426909086",
+            appId: "1:623426909086:web:b4c16775db67b1485b5c8f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Redirect if not logged in
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                window.location.href = 'admin.html';
+            }
+        });
+
+        let currentFilter = 'DRAFT';
+        let activeDocId = null;
+        let activeItems = [];
+        let menuItems = [];
+
+        // Load Menu for Autocomplete
+        getDocs(collection(db, "menu_items")).then(snap => {
+            menuItems = snap.docs.map(d => d.data());
+        });
+
+        // Setup Realtime Listener
+        let unsubscribe = null;
+
+        window.setFilter = (status) => {
+            currentFilter = status;
+
+            // UI Toggle
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                if (b.textContent.includes("Draft") && status === 'DRAFT') b.classList.add('active');
+                else if (b.textContent.includes("Paid") && status === 'PAID') b.classList.add('active');
+                else b.classList.remove('active');
             });
 
-            document.getElementById("total").innerText = "₹" + bill.total;
-        } else {
-            document.body.innerHTML = "<p style='text-align:center; margin-top:50px;'>No bill found.</p>";
+            loadBills();
+        };
+
+        function loadBills() {
+            if (unsubscribe) unsubscribe();
+
+            const q = query(collection(db, "bills"), where("status", "==", currentFilter));
+
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                const grid = document.getElementById('billGrid');
+                grid.innerHTML = '';
+
+                if (snapshot.empty) {
+                    grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#999;">No bills found.</p>';
+                }
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const topItems = data.items.slice(0, 3).map(i => `<li>${i.name} x${i.qty}</li>`).join('');
+                    const moreCount = data.items.length > 3 ? `<li>+${data.items.length - 3} more...</li>` : '';
+
+                    const card = document.createElement('div');
+                    card.className = `card ${currentFilter === 'DRAFT' ? 'draft' : 'paid'}`;
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div>
+                                <span class="table-badge">Table ${data.tableNo}</span>
+                                <span style="font-size:12px; color:#666; margin-left:5px;">#${data.billNo}</span>
+                            </div>
+                            <span class="status-badge status-${data.status.toLowerCase()}">${data.status}</span>
+                        </div>
+                        <ul>${topItems}${moreCount}</ul>
+                        ${currentFilter === 'PAID' ? `<div style="font-weight:bold; margin-bottom:10px;">Total: ₹${data.total}</div>` : ''}
+                        <button class="btn-edit" onclick="openEdit('${docSnap.id}')">
+                            ${currentFilter === 'DRAFT' ? '✏️ Edit / Finalize' : '👁 View Details'}
+                        </button>
+                    `;
+                    grid.appendChild(card);
+                });
+            }, (error) => {
+                console.error("Error fetching bills:", error);
+                const grid = document.getElementById('billGrid');
+                if (grid) {
+                    if (error.code === 'permission-denied') {
+                        grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#ef4444;">Legacy Access Denied. Please login again or check permissions.</p>';
+                    } else {
+                        grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#ef4444;">Error: ${error.message}</p>`;
+                    }
+                }
+            });
         }
 
-        function shareBill() {
-            if (navigator.share) {
-                navigator.share({
-                    title: "Chef Cafe Bill",
-                    text: `Table ${bill.tableNo} - Total: ₹${bill.total} \nThank you for dining!`,
-                    url: window.location.href
-                }).catch(console.error);
+        // EDIT LOGIC
+        window.openEdit = (id) => {
+            activeDocId = id;
+            // Get current data from local (or fetch) - since we have realtime, we can just fetch once or find in cache.
+            // Simplified: Just fetch fresh doc to be safe
+            import("https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js").then(({ getDoc, doc }) => {
+                getDoc(doc(db, "bills", id)).then(snap => {
+                    const data = snap.data();
+                    activeItems = [...data.items]; // Clone
+
+                    document.getElementById('modalTitle').textContent = `Bill #${data.billNo}`;
+                    document.getElementById('modalSubtitle').textContent = `Table ${data.tableNo} | ${data.status}`;
+
+                    renderModalItems(data.status === 'PAID');
+
+                    // Show/Hide sections based on status
+                    if (data.status === 'PAID') {
+                        document.getElementById('addItemSection').style.display = 'none';
+                        document.getElementById('saveDraftBtn').style.display = 'none';
+                        document.getElementById('finalizeSection').style.display = 'none';
+                    } else {
+                        document.getElementById('addItemSection').style.display = 'block';
+                        document.getElementById('saveDraftBtn').style.display = 'block';
+                        document.getElementById('finalizeSection').style.display = 'block';
+                        document.getElementById('finalTotal').value = '';
+                    }
+
+                    document.getElementById('editModal').style.display = 'flex';
+                });
+            });
+        };
+
+        window.closeModal = () => {
+            document.getElementById('editModal').style.display = 'none';
+        };
+
+        function renderModalItems(isLocked) {
+            const container = document.getElementById('modalItems');
+            container.innerHTML = '';
+
+            activeItems.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = 'edit-item-row';
+
+                if (isLocked) {
+                    row.innerHTML = `
+                       <span>${item.name}</span>
+                       <strong>x${item.qty}</strong>
+                   `;
+                } else {
+                    // Editable Row
+                    row.innerHTML = `
+                       <span>${item.name}</span>
+                       <div class="qty-controls">
+                           <div class="qty-btn" onclick="changeQty(${idx}, -1)">-</div>
+                           <span style="width:20px; text-align:center;">${item.qty}</span>
+                           <div class="qty-btn" onclick="changeQty(${idx}, 1)">+</div>
+                           <div class="qty-btn" style="border-color:#faa; color:red;" onclick="removeItem(${idx})">🗑</div>
+                       </div>
+                   `;
+                }
+                container.appendChild(row);
+            });
+        }
+
+        window.changeQty = (idx, delta) => {
+            activeItems[idx].qty += delta;
+            if (activeItems[idx].qty < 1) activeItems[idx].qty = 1;
+            renderModalItems(false);
+        };
+
+        window.removeItem = (idx) => {
+            activeItems.splice(idx, 1);
+            renderModalItems(false);
+        };
+
+        // Modal Add Item
+        window.modalAddItem = () => {
+            const input = document.getElementById('modalSearch');
+            const name = input.value;
+            if (!name) return;
+
+            activeItems.push({ name, qty: 1 });
+            input.value = '';
+            renderModalItems(false);
+        }
+
+        // Autocomplete
+        document.getElementById('modalSearch').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const box = document.getElementById('modalSuggestions');
+            box.innerHTML = '';
+
+            if (val.length < 1) { box.style.display = 'none'; return; }
+
+            const matches = menuItems.filter(m => m.name.toLowerCase().includes(val));
+            if (matches.length > 0) {
+                box.style.display = 'block';
+                matches.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-row';
+                    div.textContent = m.name;
+                    div.onclick = () => {
+                        document.getElementById('modalSearch').value = m.name;
+                        box.style.display = 'none';
+                    };
+                    box.appendChild(div);
+                });
             } else {
-                alert("Sharing not supported on this device/browser.");
+                box.style.display = 'none';
             }
-        }
+        });
 
-        function goBackToBilling() {
-            window.location.href = "admin.html#billing";
-        }
+        // --- ACTIONS ---
+
+        // Step 3: Update Draft (No price)
+        window.updateDraft = async () => {
+            if (!activeDocId) return;
+            try {
+                await updateDoc(doc(db, "bills", activeDocId), {
+                    items: activeItems
+                });
+                closeModal();
+                // Notification could go here
+            } catch (e) {
+                console.error(e);
+                alert("Error updating draft");
+            }
+        };
+
+        // Step 4: Convert to Bill (Add Price + Change Status)
+        window.finalizeBill = async () => {
+            const totalStr = document.getElementById('finalTotal').value;
+            const total = Number(totalStr);
+
+            if (!total || total <= 0) {
+                alert("Please enter a valid Total Amount to finalize.");
+                return;
+            }
+
+            if (!confirm("Are you sure? This will lock the bill.")) return;
+
+            try {
+                // Ensure items are also updated in case edits were made
+                await updateDoc(doc(db, "bills", activeDocId), {
+                    items: activeItems,
+                    total: total,
+                    status: "PAID",
+                    timestamp: Date.now(),
+                    date: new Date().toISOString().split("T")[0]
+                });
+                closeModal();
+            } catch (e) {
+                console.error(e);
+                alert("Error finalizing bill");
+            }
+        };
+
+        // Initialize
+        loadBills();
+
+        // Make functions global for inline onclicks
+        window.changeQty = window.changeQty;
     </script>
 
 </body>

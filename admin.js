@@ -73,6 +73,11 @@ function loadItems() {
         </div>
       `;
         });
+    }, (error) => {
+        console.error("Error loading items:", error);
+        if (error.code === 'permission-denied') {
+            // alert("Permission denied accessing menu items.");
+        }
     });
 }
 

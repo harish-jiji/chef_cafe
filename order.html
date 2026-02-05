@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chef Cafe - New Order</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f97316;
+            --primary-dark: #ea580c;
+            --secondary: #1e293b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--secondary);
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--secondary);
+            font-size: 14px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+        }
+
+        .item-selection {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            font-size: 16px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-light);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 8px;
+            width: auto;
+            font-size: 14px;
+        }
+
+        .item-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            animation: slideIn 0.3s ease;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        .item-qty {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background: #f1f5f9;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            animation: fadeIn 0.3s ease;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>New Draft Order</h1>
+            <p>Select items and table number</p>
+        </div>
+
+        <!-- Table Number -->
+        <div class="card">
+            <div class="input-group">
+                <label>Table Number</label>
+                <input type="number" id="tableNo" class="input-field" placeholder="e.g. 5">
+            </div>
+        </div>
+
+        <!-- Item Selection -->
+        <div class="card">
+            <label style="display:block; margin-bottom:8px; font-weight:500; color:var(--secondary);">Add Items</label>
+            <div class="item-selection">
+                <div style="flex: 2; position: relative;">
+                    <input type="text" id="itemSearch" class="input-field" placeholder="Search item..."
+                        autocomplete="off">
+                    <div class="suggestions" id="suggestions"></div>
+                </div>
+                <div style="flex: 1;">
+                    <input type="number" id="itemQty" class="input-field" value="1" min="1" placeholder="Qty">
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="addItem()" style="margin-top: 15px;">
+                <i class="fas fa-plus"></i> Add Item
+            </button>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="card">
+            <h3>Current Order</h3>
+            <p id="emptyState" style="color:var(--text-light); text-align:center; padding:20px;">No items added yet</p>
+            <ul id="itemList" class="item-list"></ul>
+        </div>
+
+        <!-- Actions -->
+        <div style="display: flex; gap: 15px;">
+            <button class="btn btn-outline" onclick="window.location.href='index.html'">Cancel</button>
+            <button class="btn btn-primary" onclick="saveDraftOrder()">
+                <i class="fas fa-save"></i> Save Draft
+            </button>
+        </div>
+    </div>
+
+    <div id="notification" class="notification">Draft Saved!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAON6aij8dNGoRlJ1DdLcwMkPZsAGe-SBQ",
+            authDomain: "chef-s-cafe.firebaseapp.com",
+            projectId: "chef-s-cafe",
+            storageBucket: "chef-s-cafe.firebasestorage.app",
+            messagingSenderId: "623426909086",
+            appId: "1:623426909086:web:b4c16775db67b1485b5c8f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Redirect if not logged in
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                window.location.href = 'admin.html';
+            }
+        });
+
+        let currentItems = [];
+        let menuItems = [];
+
+        // Load Menu Items on Start
+        async function loadMenu() {
+            const querySnapshot = await getDocs(collection(db, "menu_items"));
+            menuItems = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+        loadMenu();
+
+        // DOM Elements
+        const itemSearch = document.getElementById('itemSearch');
+        const suggestionsBox = document.getElementById('suggestions');
+        const itemList = document.getElementById('itemList');
+        const emptyState = document.getElementById('emptyState');
+
+        // Search Logic
+        itemSearch.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            suggestionsBox.innerHTML = '';
+            if (val.length < 1) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            const matches = menuItems.filter(item => item.name.toLowerCase().includes(val));
+
+            if (matches.length > 0) {
+                suggestionsBox.style.display = 'block';
+                matches.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.textContent = item.name;
+                    div.onclick = () => {
+                        itemSearch.value = item.name;
+                        suggestionsBox.style.display = 'none';
+                    };
+                    suggestionsBox.appendChild(div);
+                });
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // Close suggestions on click outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#itemSearch')) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // Add Item
+        window.addItem = () => {
+            const name = itemSearch.value;
+            const qty = parseInt(document.getElementById('itemQty').value);
+
+            if (!name || qty < 1) {
+                showNotify("Please select an item", "error");
+                return;
+            }
+
+            currentItems.push({ name, qty });
+            renderList();
+
+            itemSearch.value = '';
+            document.getElementById('itemQty').value = 1;
+            itemSearch.focus();
+        };
+
+        // Remove Item
+        window.removeItem = (index) => {
+            currentItems.splice(index, 1);
+            renderList();
+        };
+
+        function renderList() {
+            itemList.innerHTML = '';
+            if (currentItems.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                currentItems.forEach((item, index) => {
+                    itemList.innerHTML += `
+                    <li class="order-item">
+                        <div>
+                            <span class="item-name">${item.name}</span>
+                        </div>
+                        <div style="display:flex; align-items:center">
+                            <span class="item-qty">x${item.qty}</span>
+                            <button class="btn-danger" onclick="removeItem(${index})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                `;
+                });
+            }
+        }
+
+        // Save Draft
+        window.saveDraftOrder = async () => {
+            const tableNo = document.getElementById('tableNo').value;
+
+            if (!tableNo) {
+                showNotify("Please enter Table Number");
+                return;
+            }
+            if (currentItems.length === 0) {
+                showNotify("Order is empty");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "bills"), {
+                    billNo: "DRAFT-" + Date.now().toString().slice(-4), // Simple ID
+                    tableNo,
+                    items: currentItems,
+                    status: "DRAFT", // Uppercase as per filter
+                    total: 0,
+                    createdAt: Date.now(),
+                    timestamp: Date.now(),
+                    date: new Date().toISOString().split("T")[0]
+                });
+
+                showNotify("Draft saved successfully!");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } catch (e) {
+                console.error(e);
+                showNotify("Error saving draft: " + e.message);
+            }
+        };
+
+        function showNotify(msg) {
+            const n = document.getElementById('notification');
+            n.textContent = msg;
+            n.style.display = 'block';
+            setTimeout(() => n.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+
+</html>

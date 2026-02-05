@@ -770,6 +770,12 @@
                         </li>
 
                         <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showPage('orders')">
+                                📝 Orders
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showPage('billing')">
                                 🧾 Billing
                             </a>
@@ -873,9 +879,72 @@
             </section>
         </div>
 
+        <!-- ORDERS SECTION -->
+        <div id="orders" class="admin-section" style="display:none">
+            <h2>📝 Orders (Draft)</h2>
+
+            <div class="billing-container">
+
+                <!-- LEFT: ORDER INPUT -->
+                <div class="billing-form"
+                    style="background:#fff; padding:20px; border-radius:12px; border:1px solid #e5e7eb;">
+                    <h3>New Draft Order</h3>
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:600;">Table No</label>
+                        <input id="orderTableInput" type="number" placeholder="Table Number"
+                            style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                    </div>
+
+                    <!-- Item Search -->
+                    <div class="form-group item-select" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:600;">Item Search</label>
+                        <input type="text" id="orderItemSearch" placeholder="Search item..." autocomplete="off"
+                            style="width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:6px;">
+                        <div id="orderItemDropdown" class="dropdown hidden"></div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:15px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:600;">Qty</label>
+                        <input id="orderQtyInput" type="number" value="1" min="1"
+                            style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                    </div>
+
+                    <button onclick="addItemToOrder()"
+                        style="width:100%; padding:12px; background:#667eea; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
+                        Add to Draft
+                    </button>
+                </div>
+
+                <!-- RIGHT: ORDER PREVIEW -->
+                <div class="billing-bill"
+                    style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,.05); border:1px solid #eee;">
+                    <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">Current Draft</h3>
+                    <div id="orderItems"
+                        style="min-height:300px; max-height:500px; overflow-y:auto; margin-bottom:20px;">
+                        <p style="color:#999; text-align:center; padding-top:50px">No items added</p>
+                    </div>
+
+                    <button onclick="saveDraftOrder()" class="save-btn"
+                        style="width:100%; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:1.1em;">
+                        💾 Save Draft
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
         <!-- BILLING SECTION -->
         <div id="billing" class="admin-section" style="display:none">
             <h2>🧾 Billing</h2>
+
+            <!-- TOP PANEL: DRAFT ORDERS -->
+            <div class="dash-card" id="draftOrdersBox" style="margin-bottom:20px;">
+                <h3 style="margin-bottom:10px;">📝 Draft Orders</h3>
+                <div id="draftOrdersList" class="form-grid"
+                    style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                    <p style="color:#999">No draft orders</p>
+                </div>
+            </div>
 
             <div class="billing-container">
 
@@ -941,10 +1010,21 @@
                     </div>
 
                     <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button onclick="saveDraftFromBilling()"
+                            style="flex:1; padding:15px; background:#f59e0b; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:1em;">
+                            💾 Update Draft
+                        </button>
+
+                        <button onclick="convertToBill()"
+                            style="flex:1; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:1.1em;">
+                            ✅ Convert to Bill (Print)
+                        </button>
+                        <!-- 
                         <button onclick="saveBillOnly()" class="save-btn"
                             style="flex:1; padding:15px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:1.1em;">
                             ✅ Save & Preview
                         </button>
+                        -->
                     </div>
                 </div>
             </div>
@@ -1534,6 +1614,11 @@
             total: 0
         };
 
+        let currentOrder = {
+            tableNo: null,
+            items: []
+        };
+
         let salesChart = null;
 
         window.loadDashboardGraph = async function () {
@@ -1744,6 +1829,7 @@
                 loadDashboard();        // Dashboard Stats
                 loadDashboardGraph();   // Dashboard Graph
                 loadBills('7days');     // Bills History
+                loadDraftOrders();      // Draft Orders
 
                 // Show default page
                 showPage('dashboard');
@@ -1865,6 +1951,9 @@
                     menuMap[item.name] = item;
                     menuItemsArray.push(item);
                 });
+            }, (error) => {
+                console.error("Menu load error:", error);
+                showNotification("Error loading menu items: " + error.message, "error");
             });
 
             // Re-bind search listener for custom dropdown
@@ -1908,6 +1997,45 @@
                     }
                 });
             }
+        }
+
+        // SETUP ORDER SEARCH (New)
+        const orderSearchInput = document.getElementById("orderItemSearch");
+        const orderDropdown = document.getElementById("orderItemDropdown");
+
+        if (orderSearchInput && orderDropdown) {
+            orderSearchInput.addEventListener("input", () => {
+                const q = orderSearchInput.value.toLowerCase();
+                orderDropdown.innerHTML = "";
+                if (!q) {
+                    orderDropdown.classList.add("hidden");
+                    return;
+                }
+                const matches = menuItemsArray.filter(item =>
+                    item.name.toLowerCase().includes(q)
+                );
+                if (matches.length === 0) {
+                    orderDropdown.classList.add("hidden");
+                    return;
+                }
+                matches.forEach(item => {
+                    const div = document.createElement("div");
+                    div.textContent = item.name;
+                    div.onclick = () => {
+                        orderSearchInput.value = item.name;
+                        orderDropdown.classList.add("hidden");
+                    };
+                    orderDropdown.appendChild(div);
+                });
+                orderDropdown.classList.remove("hidden");
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener("click", (e) => {
+                if (!orderSearchInput.contains(e.target) && !orderDropdown.contains(e.target)) {
+                    orderDropdown.classList.add("hidden");
+                }
+            });
         }
 
         function selectItem(item) {
@@ -2096,6 +2224,17 @@
 
             await addDoc(collection(db, "bills"), billData);
 
+            await addDoc(collection(db, "bills"), billData);
+
+            // If bill came from draft → update status to 'billed' (instead of delete)
+            if (currentBill.draftId) {
+                try {
+                    await updateDoc(doc(db, "orders", currentBill.draftId), {
+                        status: "billed"
+                    });
+                } catch (e) { console.error("Could not update draft status", e); }
+            }
+
             // Return for printing usage
             return billData;
         }
@@ -2129,14 +2268,258 @@
             }
         };
 
+        // NEW: Convert Draft to Bill (Finalize)
+        window.convertToBill = async function () {
+            try {
+                // Get button safely
+                const btn = event ? (event.target || event.srcElement) : null;
+                if (btn) setButtonLoading(btn, true, "✅ Converting...");
+
+                // Use the shared helper to save to Firestore
+                const billData = await saveBillData();
+
+                // Store for preview page
+                localStorage.setItem("printBill", JSON.stringify(billData));
+
+                // Redirect to billing.html
+                window.location.href = "billing.html";
+
+                // Clear
+                clearBill();
+
+            } catch (e) {
+                console.error(e);
+            } finally {
+                const btn = event ? (event.target || event.srcElement) : null;
+                if (btn) setButtonLoading(btn, false, "✅ Convert to Bill");
+            }
+        };
+
+        // NEW: Save as Draft (from Billing page)
+        window.saveDraftFromBilling = async function () {
+            if (!currentBill.tableNo || currentBill.items.length === 0) {
+                alert("Nothing to save");
+                return;
+            }
+
+            const data = {
+                tableNo: currentBill.tableNo,
+                items: currentBill.items.map(i => ({
+                    name: i.name,
+                    qty: i.qty
+                })),
+                status: "draft",
+                createdAt: Date.now()
+            };
+
+            // Generate a temp orderNo if creating new? Or reuse?
+            // For simplicity, if we are editing a draft, we update it.
+            // If new, we create a new one.
+
+            try {
+                if (currentBill.draftId) {
+                    await updateDoc(doc(db, "orders", currentBill.draftId), data);
+                    showNotification("Memorandum updated as Draft");
+                } else {
+                    // Logic to create new draft similar to saveDraftOrder but from billing
+                    // Reusing saveDraftOrder logic might be cleaner but it depends on DOM elements.
+                    // Let's keep it simple: Just allow saving modifications to EXISTING drafts for now
+                    // as per instructions "Load draft -> Edit -> Save Draft (update)"
+                    showNotification("Cannot create new draft from here yet. Use Orders page.", "error");
+                    return;
+                }
+            } catch (e) {
+                console.error(e);
+                showNotification("Error saving draft: " + e.message, "error");
+            }
+        };
+
         function clearBill() {
-            currentBill = { tableNo: null, items: [], total: 0 };
+            currentBill = { tableNo: null, items: [], total: 0, draftId: null };
             renderBillItems();
             document.getElementById("tableInput").value = "";
             document.getElementById("itemSearch").value = "";
             document.getElementById("qtyInput").value = 1;
             document.getElementById("priceInput").value = "";
             document.getElementById("billTotal").innerText = "₹0";
+
+            // Check buttons
+            const saveBtn = document.getElementById("saveBillBtn"); // We need to add IDs to buttons
+        }
+
+        // ============================================
+        // ORDERS LOGIC (DRAFTS)
+        // ============================================
+
+        window.addItemToOrder = function () {
+            const nameInput = document.getElementById("orderItemSearch");
+            const qtyInput = document.getElementById("orderQtyInput");
+            const tableInput = document.getElementById("orderTableInput");
+
+            const name = nameInput.value.trim();
+            const qty = Number(qtyInput.value);
+            const table = tableInput.value;
+
+            if (!name || qty <= 0 || !table) {
+                alert("Missing name, quantity, or table number");
+                return;
+            }
+
+            currentOrder.tableNo = table;
+            currentOrder.items.push({ name, qty });
+
+            renderOrderItems();
+
+            nameInput.value = "";
+            qtyInput.value = 1;
+            nameInput.focus();
+        };
+
+        window.renderOrderItems = function () {
+            const el = document.getElementById("orderItems");
+            el.innerHTML = "";
+
+            if (currentOrder.items.length === 0) {
+                el.innerHTML = "<p style='color:#999; text-align:center; padding-top:50px'>No items added</p>";
+                return;
+            }
+
+            currentOrder.items.forEach((i, idx) => {
+                el.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee;">
+                        <span>${i.name} × ${i.qty}</span>
+                        <button onclick="removeOrderItem(${idx})" style="color:red; border:none; background:none; cursor:pointer;">✖</button>
+                    </div>
+                `;
+            });
+        };
+
+        window.removeOrderItem = function (i) {
+            currentOrder.items.splice(i, 1);
+            window.renderOrderItems();
+        };
+
+        window.saveDraftOrder = async function () {
+            if (!currentOrder.tableNo || currentOrder.items.length === 0) {
+                alert("Empty order");
+                return;
+            }
+
+            const dateStr = new Date().toISOString().split("T")[0];
+            const counterRef = doc(db, "counters", "orders");
+
+            let orderNo;
+
+            try {
+                // Try simple increment first
+                await updateDoc(counterRef, { current: increment(1) });
+                const snap = await getDoc(counterRef);
+                orderNo = `O-${dateStr.replace(/-/g, "")}-${String(snap.data().current).padStart(3, "0")}`;
+            } catch (err) {
+                // Counter doesn't exist? Create key
+                await setDoc(counterRef, { current: 1 });
+                orderNo = `O-${dateStr.replace(/-/g, "")}-001`;
+            }
+
+            // Save actual order
+            await addDoc(collection(db, "orders"), {
+                orderNo,
+                tableNo: currentOrder.tableNo,
+                items: currentOrder.items,
+                status: "draft", // Lowercase as per latest request
+                date: dateStr,
+                createdAt: Date.now()
+            });
+
+            currentOrder = { tableNo: null, items: [] };
+            window.renderOrderItems();
+            document.getElementById("orderTableInput").value = "";
+
+            showNotification("📝 Draft order saved");
+        };
+
+        window.loadDraftOrders = function () {
+            const q = query(
+                collection(db, "orders"),
+                where("status", "==", "draft"), // Lowercase match
+                orderBy("createdAt", "desc")
+            );
+
+            onSnapshot(q, snap => {
+                const box = document.getElementById("draftOrders");
+                if (!box) return;
+
+                if (snap.empty) {
+                    box.innerHTML = "";
+                    return;
+                }
+
+                let html = "<h4 style='grid-column:1/-1; margin-bottom:10px;'>Draft Orders</h4>";
+
+                snap.forEach(docSnap => {
+                    const o = docSnap.data();
+                    const itemCount = o.items.length;
+
+                    html += `
+                        <div class="draft-row" style="display:flex; justify-content:space-between; align-items:center;">
+                             <div>
+                                <strong>Table ${o.tableNo}</strong>
+                                <span style="font-size:12px; color:#666; margin-left:10px;">${o.orderNo}</span>
+                             </div>
+                             <button onclick="loadDraft('${docSnap.id}')" style="background:#ddd; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Edit</button>
+                        </div>
+                    `;
+                });
+
+                box.innerHTML = html;
+            }, (error) => {
+                const box = document.getElementById("draftOrders");
+                if (box) box.innerHTML = `<p style='color:red; text-align:center;'>Error loading drafts: ${error.message}</p>`;
+                console.error("Draft orders error:", error);
+            });
+        };
+
+        // Renamed to loadDraft as per instructions
+        window.loadDraft = async function (id) {
+            const snap = await getDoc(doc(db, "orders", id));
+            if (!snap.exists()) return;
+
+            const o = snap.data();
+
+            clearBill(); // Clear current bill inputs
+
+            // Transfer to bill
+            currentBill.tableNo = o.tableNo;
+            currentBill.draftId = id; // STORE ID
+
+            currentBill.items = o.items.map(i => {
+                const menuPrice = menuMap[i.name] ? menuMap[i.name].price : 0;
+                return {
+                    name: i.name,
+                    qty: i.qty,
+                    price: menuPrice
+                };
+            });
+
+            document.getElementById("tableInput").value = o.tableNo;
+
+            renderBillItems();
+            showPage("billing");
+
+            showNotification("Draft loaded. You can edit and Convert to Bill.");
+        };
+
+        // Helper Functions for Date (Restored)
+        function getStartOfDay(ts) {
+            const d = new Date(ts);
+            d.setHours(0, 0, 0, 0);
+            return d.getTime();
+        }
+
+        function getEndOfDay(ts) {
+            const d = new Date(ts);
+            d.setHours(23, 59, 59, 999);
+            return d.getTime();
         }
 
         // Keep generateBillNo as it was useful
@@ -2172,12 +2555,12 @@
             let start, end;
 
             if (filterType === "today") {
-                start = startOfDay(now);
-                end = endOfDay(now);
+                start = getStartOfDay(now);
+                end = getEndOfDay(now);
             } else if (filterType === "yesterday") {
                 const y = now - 86400000;
-                start = startOfDay(y);
-                end = endOfDay(y);
+                start = getStartOfDay(y);
+                end = getEndOfDay(y);
             } else { // 7days
                 start = now - (7 * 86400000);
                 end = now;
@@ -2223,6 +2606,10 @@
                         </div>
                     `;
                 });
+            }, (error) => {
+                const billsList = document.getElementById("billsList");
+                if (billsList) billsList.innerHTML = `<p style='color:red; text-align:center;'>Error loading bills: ${error.message}</p>`;
+                console.error("Bills history error:", error);
             });
 
             // Update active buttons
