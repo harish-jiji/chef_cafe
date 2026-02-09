@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Draft Order - Chef Cafe</title>
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -26,102 +27,8 @@
             --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        /* NAVBAR STYLES */
-        .navbar {
-            background: linear-gradient(135deg, var(--secondary) 0%, #334155 100%);
-            padding: 0;
-            box-shadow: var(--shadow-lg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            margin: -20px -20px 20px -20px;
-            /* Counteract body padding */
-        }
+        /* NAVBAR STYLES MOVED TO css/admin-nav.css */
 
-        .navbar-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            color: white;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: 700;
-            text-decoration: none;
-            color: white;
-        }
-
-        .navbar-brand i {
-            color: var(--primary);
-            font-size: 28px;
-        }
-
-        .navbar-menu {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .nav-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .admin-nav {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding: 12px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-btn.section {
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.7);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 12px;
-            flex: 1;
-            min-width: 100px;
-            text-align: center;
-        }
-
-        .nav-btn.section:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-        }
-
-        .nav-btn.section.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-        }
 
         * {
             margin: 0;
@@ -134,8 +41,10 @@
             background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
             color: var(--text-dark);
             min-height: 100vh;
-            padding: 20px;
+            padding: 0;
+            /* padding: 20px; REMOVED to allow full width navbar */
         }
+
 
         .header {
             text-align: center;
@@ -191,8 +100,10 @@
 
         .container {
             max-width: 700px;
-            margin: 0 auto;
+            margin: 20px auto;
+            padding: 0 20px;
         }
+
 
         .card {
             background: var(--card-bg);
@@ -640,37 +551,8 @@
 <body>
 
     <!-- NAVBAR -->
-    <div class="navbar">
-        <div class="navbar-top">
-            <a href="admin.html" class="navbar-brand">
-                <i class="fas fa-utensils"></i>
-                Chef Cafe
-            </a>
-            <div class="navbar-menu">
-                <button class="nav-btn" id="logoutBtn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-        </div>
+    <div id="navbar-container"></div>
 
-        <div class="admin-nav">
-            <button class="nav-btn section" onclick="window.location.href='admin.html'">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </button>
-            <button class="nav-btn section" onclick="window.location.href='admin.html'"> <!-- Menu is in admin -->
-                <i class="fas fa-book"></i> Menu
-            </button>
-            <button class="nav-btn section" onclick="window.location.href='billing.html'">
-                <i class="fas fa-receipt"></i> Billing
-            </button>
-            <button class="nav-btn section active" onclick="window.location.href='order.html'">
-                <i class="fas fa-clipboard-list"></i> New Order
-            </button>
-            <button class="nav-btn section" id="historyTab" onclick="window.location.href='history.html'">
-                <i class="fas fa-history"></i> History
-            </button>
-        </div>
-    </div>
 
     <div class="container">
         <div class="header">
@@ -812,6 +694,7 @@
             if (matches.length > 0) {
                 suggestionsBox.classList.add('show');
                 matches.forEach(item => {
+                    const priceDisplay = isNaN(Number(item.price)) ? item.price : '₹' + Number(item.price).toFixed(2);
                     const div = document.createElement('div');
                     div.className = 'suggestion-item';
                     div.innerHTML = `
@@ -822,7 +705,7 @@
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="suggestion-item-price">₹${Number(item.price).toFixed(2)}</span>
+                            <span class="suggestion-item-price">${priceDisplay}</span>
                             <i class="fas fa-chevron-right" style="color: var(--text-light); font-size: 12px;"></i>
                         </div>
                     `;
@@ -880,6 +763,14 @@
             renderList();
         };
 
+        window.updateQty = (index, change) => {
+            const newQty = currentItems[index].qty + change;
+            if (newQty > 0) {
+                currentItems[index].qty = newQty;
+                renderList();
+            }
+        };
+
         function renderList() {
             itemList.innerHTML = '';
 
@@ -890,17 +781,35 @@
                 currentItems.forEach((item, index) => {
                     const li = document.createElement('li');
                     li.className = 'order-item';
-                    const itemTotal = (item.price * item.qty).toFixed(2);
+
+                    let itemTotal = '0.00';
+                    let unitPriceDisplay = '';
+
+                    if (!isNaN(Number(item.price))) {
+                        itemTotal = '₹' + (Number(item.price) * item.qty).toFixed(2);
+                        unitPriceDisplay = '₹' + Number(item.price).toFixed(2);
+                    } else {
+                        itemTotal = item.price; // Show text if price is text
+                        unitPriceDisplay = item.price;
+                    }
+
                     li.innerHTML = `
                         <div class="item-info">
                             <div class="item-name">${item.name}</div>
-                            <div class="item-details">
-                                <span class="item-price-badge">${item.category}</span>
-                                <span class="item-qty-badge">×${item.qty}</span>
-                                <span style="color: var(--primary); font-weight: 600;">₹${itemTotal}</span>
+                             <div class="item-details" style="display:flex; align-items:center; gap:8px;">
+                                <span class="item-price-badge">${unitPriceDisplay}</span>
                             </div>
                         </div>
-                        <div class="item-actions">
+
+                         <div style="display: flex; align-items: center; gap: 12px;">
+                             <div style="display: flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+                                <button onclick="updateQty(${index}, -1)" style="padding: 4px 10px; border:none; background: #eee; cursor: pointer;">-</button>
+                                <span style="padding: 4px 10px; font-weight: 600; font-size: 14px; min-width: 30px; text-align: center;">${item.qty}</span>
+                                <button onclick="updateQty(${index}, 1)" style="padding: 4px 10px; border:none; background: #eee; cursor: pointer;">+</button>
+                            </div>
+
+                            <span style="color: var(--primary); font-weight: 700; font-size: 14px; min-width: 60px; text-align: right;">${itemTotal}</span>
+
                             <button class="btn-danger" onclick="removeItem(${index})">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -969,3 +878,4 @@
 </body>
 
 </html>
+<script src="js/navbar-loader.js"></script>

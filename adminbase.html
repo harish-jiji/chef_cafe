@@ -1,0 +1,31 @@
+<div class="navbar">
+    <div class="navbar-top">
+        <a href="admin.html" class="navbar-brand">
+            <i class="fas fa-utensils"></i>
+            Chef Cafe
+        </a>
+        <div class="navbar-menu">
+            <button class="nav-btn" id="logoutBtn" onclick="window.logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <div class="admin-nav">
+        <button class="nav-btn section" id="dashboard-link" onclick="window.location.href='admin.html'">
+            <i class="fas fa-chart-line"></i> Dashboard
+        </button>
+        <button class="nav-btn section" id="menu-link" onclick="window.location.href='admin.html?section=menu'">
+            <i class="fas fa-book"></i> Menu
+        </button>
+        <button class="nav-btn section" id="billing-link" onclick="window.location.href='billing.html'">
+            <i class="fas fa-receipt"></i> Billing
+        </button>
+        <button class="nav-btn section" id="order-link" onclick="window.location.href='order.html'">
+            <i class="fas fa-clipboard-list"></i> New Order
+        </button>
+        <button class="nav-btn section" id="history-link" onclick="window.location.href='history.html'">
+            <i class="fas fa-history"></i> History
+        </button>
+    </div>
+</div>

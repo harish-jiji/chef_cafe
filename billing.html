@@ -5,13 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Billing - Chef Cafe</title>
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #FF6B35;
-            --secondary: #1a1a2e;
-            --light: #f8f9fa;
-            --border: #ddd;
+            --primary-light: #FF8C5A;
+            --primary-dark: #E55100;
+            --secondary: #1E293B;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --border: #E2E8F0;
+            --text-dark: #1E293B;
+            --text-light: #64748B;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
         * {
@@ -21,283 +34,652 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--light);
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #E2E8F0 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
         }
 
-        /* NAVBAR STYLES */
-        .navbar {
-            background: linear-gradient(135deg, var(--secondary) 0%, #334155 100%);
-            padding: 0;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            margin-bottom: 24px;
+        /* Override navbar margin for this page design */
+        #navbar-container .navbar {
+            margin-bottom: 0 !important;
         }
 
-        .navbar-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            color: white;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
+        /* ═════════════════════════════════════════════════════════
+           PAGE HEADER
+           ═════════════════════════════════════════════════════════ */
 
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: 700;
-            text-decoration: none;
-            color: white;
-        }
-
-        .navbar-brand i {
-            color: var(--primary);
-            font-size: 28px;
-        }
-
-        .navbar-menu {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .nav-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .admin-nav {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding: 12px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-btn.section {
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.7);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 12px;
-            flex: 1;
-            min-width: 100px;
+        .page-header {
+            padding: 32px 24px;
             text-align: center;
-        }
-
-        .nav-btn.section:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
+            margin-bottom: 0;
         }
 
-        .nav-btn.section.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
 
-        /* BILLING LAYOUT */
-        .billing-container {
-            display: grid;
-            gap: 16px;
-            max-width: 1200px;
+        .page-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           MAIN CONTENT
+           ═════════════════════════════════════════════════════════ */
+
+        .main-content {
+            padding: 32px 24px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
-        @media (min-width: 769px) {
+        /* ═════════════════════════════════════════════════════════
+           BILLING LAYOUT
+           ═════════════════════════════════════════════════════════ */
+
+        .billing-container {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 1024px) {
             .billing-container {
-                grid-template-columns: 350px 1fr;
+                grid-template-columns: 380px 1fr;
                 align-items: start;
             }
         }
 
-        /* LEFT: BILLING FORM */
+        /* ═════════════════════════════════════════════════════════
+           BILLING FORM (LEFT SIDE)
+           ═════════════════════════════════════════════════════════ */
+
         .billing-form {
-            background: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            background: var(--card-bg);
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .billing-form:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .form-header i {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .form-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
-            font-size: 14px;
+            color: var(--text-dark);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-control {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
             font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: white;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-light);
         }
 
         .input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
         }
 
         /* Item Dropdown */
         .item-select {
             position: relative;
+            z-index: 50;
         }
 
         .dropdown {
             position: absolute;
-            width: 100%;
-            background: #fff;
-            border: 1px solid #ddd;
-            max-height: 220px;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            max-height: 280px;
             overflow-y: auto;
             z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 0 0 6px 6px;
-        }
-
-        .dropdown div {
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #f9f9f9;
-            font-size: 14px;
-        }
-
-        .dropdown div:hover {
-            background: #f2f2f2;
-        }
-
-        .dropdown.hidden {
+            box-shadow: var(--shadow-lg);
+            border-radius: 10px;
+            margin-top: 4px;
             display: none;
         }
 
-        /* RIGHT: LIVE BILL */
+        .dropdown.show {
+            display: block;
+        }
+
+        .dropdown div {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            transition: all 0.2s ease;
+            color: var(--text-dark);
+        }
+
+        .dropdown div:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown div:hover {
+            background: var(--bg);
+            padding-left: 20px;
+            color: var(--primary);
+        }
+
+        /* Manual Price Box */
+        .manual-price-box {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FEF08A 100%);
+            border: 2px solid #FCD34D;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .manual-price-box.show {
+            display: block;
+        }
+
+        .manual-price-box label {
+            display: block;
+            font-size: 12px;
+            color: #92400E;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .manual-price-box input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #FCD34D;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .manual-price-box input:focus {
+            outline: none;
+            border-color: #F59E0B;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           BILLING BILL (RIGHT SIDE)
+           ═════════════════════════════════════════════════════════ */
+
         .billing-bill {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, .05);
-            border: 1px solid #eee;
+            background: var(--card-bg);
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .billing-bill:hover {
+            box-shadow: var(--shadow-lg);
         }
 
         .bill-header-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .bill-header-row h3 {
             margin: 0;
-            font-size: 18px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bill-header-row i {
+            color: var(--primary);
+            font-size: 24px;
         }
 
         .bill-items-container {
             min-height: 300px;
-            max-height: 500px;
+            max-height: 450px;
             overflow-y: auto;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            padding: 12px 0;
+        }
+
+        .bill-items-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .bill-items-container::-webkit-scrollbar-track {
+            background: var(--bg);
+            border-radius: 10px;
+        }
+
+        .bill-items-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        .bill-items-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: var(--border);
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin: 0;
         }
 
         .bill-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
             font-size: 14px;
-        }
-
-        .bill-total-row {
-            border-top: 2px solid #333;
-            padding-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-
-        .primary-btn {
-            width: 100%;
-            padding: 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .primary-btn:hover {
-            background: #5a6fd6;
-        }
-
-        .success-btn {
-            flex: 1;
-            padding: 15px;
-            background: #10b981;
-            color: white;
-            border: none;
+            background: var(--bg);
             border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
         }
 
-        .success-btn:hover {
-            background: #059669;
+        .bill-row:hover {
+            background: #F1F5F9;
+            border-color: var(--primary);
+        }
+
+        .bill-row-name {
+            flex: 2;
+            font-weight: 600;
+            color: var(--text-dark);
+            min-width: 0;
+        }
+
+        .bill-row-qty {
+            flex: 1;
+            text-align: center;
+        }
+
+        .bill-row-qty input {
+            width: 50px;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .bill-row-qty input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+        }
+
+        .bill-row-price {
+            flex: 1;
+            text-align: right;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .bill-row-action {
+            flex: 0 0 auto;
+            margin-left: 12px;
         }
 
         .remove-btn {
             background: none;
             border: none;
-            color: #ef4444;
+            color: var(--danger);
             cursor: pointer;
-            font-size: 16px;
-            margin-left: 10px;
+            font-size: 18px;
+            transition: all 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .remove-btn:hover {
+            background: #FEE2E2;
+            color: #DC2626;
+            transform: scale(1.15);
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           BILL TOTAL
+           ═════════════════════════════════════════════════════════ */
+
+        .bill-summary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .bill-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .bill-total-row span:last-child {
+            font-size: 28px;
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           ACTION BUTTONS
+           ═════════════════════════════════════════════════════════ */
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 0;
+        }
+
+        .success-btn {
+            flex: 1;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .success-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .success-btn:active {
+            transform: translateY(0);
+        }
+
+        .success-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═════════════════════════════════════════════════════════ */
+
+        @media (max-width: 1024px) {
+            .billing-form {
+                position: static;
+                top: auto;
+            }
+
+            .billing-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 24px 16px;
+            }
+
+            .page-header h1 {
+                font-size: 24px;
+            }
+
+            .main-content {
+                padding: 24px 16px;
+            }
+
+            .billing-form {
+                padding: 20px;
+            }
+
+            .billing-bill {
+                padding: 20px;
+            }
+
+            .form-header {
+                margin-bottom: 20px;
+            }
+
+            .form-group {
+                margin-bottom: 16px;
+            }
+
+            .bill-header-row {
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+            }
+
+            .bill-items-container {
+                min-height: 250px;
+                max-height: 350px;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .success-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-header {
+                padding: 20px 12px;
+            }
+
+            .page-header h1 {
+                font-size: 20px;
+            }
+
+            .main-content {
+                padding: 16px 12px;
+            }
+
+            .billing-form,
+            .billing-bill {
+                padding: 16px;
+                border-radius: 12px;
+            }
+
+            .form-header {
+                margin-bottom: 16px;
+            }
+
+            .form-group {
+                margin-bottom: 14px;
+            }
+
+            .form-group label {
+                font-size: 12px;
+            }
+
+            .form-control {
+                padding: 10px 12px;
+                font-size: 13px;
+                border-radius: 8px;
+            }
+
+            .bill-row {
+                padding: 10px 12px;
+                margin-bottom: 6px;
+                font-size: 13px;
+            }
+
+            .bill-row-qty input {
+                width: 45px;
+                padding: 5px;
+                font-size: 11px;
+            }
+
+            .remove-btn {
+                font-size: 16px;
+                margin-left: 8px;
+            }
+
+            .bill-total-row {
+                font-size: 20px;
+            }
+
+            .bill-total-row span:last-child {
+                font-size: 24px;
+            }
+
+            .success-btn {
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+
+            .action-buttons {
+                gap: 8px;
+            }
+
+            .bill-header-row h3 {
+                font-size: 16px;
+            }
+
+            .bill-header-row i {
+                font-size: 20px;
+            }
+
+            .input-row {
+                gap: 10px;
+            }
+
+            .manual-price-box {
+                padding: 10px;
+            }
+
+            .manual-price-box label {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+
+            .manual-price-box input {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -305,99 +687,100 @@
 <body>
 
     <!-- NAVBAR -->
-    <div class="navbar">
-        <div class="navbar-top">
-            <a href="admin.html" class="navbar-brand">
-                <i class="fas fa-utensils"></i>
-                Chef Cafe
-            </a>
-            <div class="navbar-menu">
-                <button class="nav-btn" id="logoutBtn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-        </div>
+    <div id="navbar-container"></div>
 
-        <div class="admin-nav">
-            <button class="nav-btn section" onclick="window.location.href='admin.html'">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </button>
-            <button class="nav-btn section" onclick="window.location.href='admin.html'">
-                <i class="fas fa-book"></i> Menu
-            </button>
-            <button class="nav-btn section active" onclick="window.location.reload()">
-                <i class="fas fa-receipt"></i> Billing
-            </button>
-            <button class="nav-btn section" onclick="window.location.href='order.html'">
-                <i class="fas fa-clipboard-list"></i> New Order
-            </button>
-            <button class="nav-btn section" onclick="window.location.href='history.html'">
-                <i class="fas fa-history"></i> History
-            </button>
-        </div>
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <h1>Billing</h1>
+        <p>Create and manage bills for current orders</p>
     </div>
 
     <!-- MAIN CONTENT -->
-    <div class="billing-container">
+    <div class="main-content">
+        <div class="billing-container">
 
-        <!-- LEFT: INPUTS -->
-        <div class="billing-form">
-            <div class="form-group">
-                <label>Table Number</label>
-                <input type="number" id="tableInput" class="form-control" placeholder="Enter Table No">
-            </div>
-
-            <div class="form-group item-select">
-                <label>Item Search</label>
-                <input type="text" id="itemSearch" class="form-control" placeholder="Search item..." autocomplete="off">
-                <div id="itemDropdown" class="dropdown hidden"></div>
-            </div>
-
-            <div class="form-group input-row">
-                <div>
-                    <label>Price</label>
-                    <input type="text" id="priceInput" class="form-control" placeholder="Price">
-                    <!-- Manual Price Box -->
-                    <div id="manualPriceBox"
-                        style="display:none; margin-top:6px; background:#fff8e1; padding:5px; border-radius:4px; border:1px solid #ffebb0;">
-                        <label style="font-size:11px; display:block; color:#856404; font-weight:bold;">Enter Final
-                            Price</label>
-                        <input type="number" id="finalPriceInput" class="form-control mt-1" placeholder="e.g. 150">
+            <!-- LEFT: BILLING FORM -->
+            <div class="billing-form">
+                <!-- DRAFT BILLS PANEL -->
+                <div class="card"
+                    style="margin-bottom:24px; padding:16px; border:1px solid var(--border); border-radius:12px; background:#F0F9FF;">
+                    <h3
+                        style="font-size:16px; color:var(--primary); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-clock"></i> In-Progress Orders
+                    </h3>
+                    <div id="draftBillsList">
+                        <p style="color:#64748B; font-size:13px;">Loading drafts...</p>
                     </div>
                 </div>
-                <div>
-                    <label>Qty</label>
-                    <input type="number" id="qtyInput" class="form-control" value="1" min="1">
+
+                <div class="form-header">
+                    <i class="fas fa-credit-card"></i>
+                    <h3>Create Bill</h3>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-chair"></i> Table Number</label>
+                    <input type="number" id="tableInput" class="form-control" placeholder="Enter table number" min="1">
+                </div>
+
+                <div class="form-group item-select">
+                    <label><i class="fas fa-search"></i> Item Search</label>
+                    <input type="text" id="itemSearch" class="form-control" placeholder="Search menu items..."
+                        autocomplete="off">
+                    <div id="itemDropdown" class="dropdown"></div>
+                </div>
+
+                <div class="form-group input-row">
+                    <div>
+                        <label><i class="fas fa-tag"></i> Price</label>
+                        <input type="text" id="priceInput" class="form-control" placeholder="Item price">
+                        <div id="manualPriceBox" class="manual-price-box">
+                            <label>Enter Final Price</label>
+                            <input type="number" id="finalPriceInput" class="form-control" placeholder="e.g., 150"
+                                step="0.01">
+                        </div>
+                    </div>
+                    <div>
+                        <label><i class="fas fa-boxes"></i> Qty</label>
+                        <input type="number" id="qtyInput" class="form-control" value="1" min="1">
+                    </div>
+                </div>
+
+                <button onclick="addItemToBill()" class="btn-primary">
+                    <i class="fas fa-plus"></i> Add to Bill
+                </button>
+            </div>
+
+            <!-- RIGHT: LIVE BILL -->
+            <div class="billing-bill">
+                <div class="bill-header-row">
+                    <h3>
+                        <i class="fas fa-receipt"></i> Current Bill
+                    </h3>
+                </div>
+
+                <div id="billItems" class="bill-items-container">
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No items added yet</p>
+                    </div>
+                </div>
+
+                <div class="bill-summary">
+                    <div class="bill-total-row">
+                        <span>Grand Total:</span>
+                        <span><i class="fas fa-rupee-sign"></i><span id="billTotal">0</span></span>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button onclick="saveBillOnly()" class="success-btn">
+                        <i class="fas fa-check-circle"></i> Save & Preview
+                    </button>
                 </div>
             </div>
 
-            <button onclick="addItemToBill()" class="primary-btn">
-                Add to Bill
-            </button>
         </div>
-
-        <!-- RIGHT: LIVE BILL -->
-        <div class="billing-bill">
-            <div class="bill-header-row">
-                <h3>Current Bill</h3>
-            </div>
-
-            <div id="billItems" class="bill-items-container">
-                <p style="color:#999; text-align:center; padding-top:50px;">No items added</p>
-            </div>
-
-            <div class="bill-total-row">
-                <span>Grand Total:</span>
-                <span><span id="billTotal">₹0</span></span>
-            </div>
-
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="saveBillOnly()" class="success-btn">
-                    ✅ Save & Preview
-                </button>
-            </div>
-        </div>
-
     </div>
 
     <!-- SCRIPTS -->
@@ -405,7 +788,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
         import {
-            getFirestore, collection, addDoc, updateDoc, doc, getDoc, setDoc, increment, onSnapshot
+            getFirestore, collection, addDoc, updateDoc, doc, getDoc, setDoc, increment, onSnapshot, query, where, orderBy
         } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -422,6 +805,7 @@
         const auth = getAuth(app);
 
         let currentBill = {
+            id: null,
             tableNo: null,
             items: [],
             total: 0
@@ -434,6 +818,7 @@
                 window.location.href = "admin.html";
             } else {
                 loadMenuForBilling();
+                loadDraftBills();
             }
         });
 
@@ -443,6 +828,101 @@
             });
         };
 
+        // --- DRAFT BILLS LOGIC ---
+        function loadDraftBills() {
+            const list = document.getElementById("draftBillsList");
+
+            const q = query(
+                collection(db, "bills"),
+                where("status", "==", "DRAFT")
+            );
+
+            onSnapshot(q, (snap) => {
+                const draftDocs = [];
+                snap.forEach(d => draftDocs.push({ id: d.id, ...d.data() }));
+
+                // Client-side sort by createdAt descending
+                draftDocs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                const list = document.getElementById("draftBillsList");
+                list.innerHTML = "";
+
+                if (draftDocs.length === 0) {
+                    list.innerHTML = "<p style='color:#64748B; font-size:13px;'>No active orders</p>";
+                    return;
+                }
+
+                draftDocs.forEach(bill => {
+                    const date = new Date(bill.createdAt || Date.now());
+                    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    const div = document.createElement("div");
+                    div.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; background:white; border-radius:8px; margin-bottom:8px; border:1px solid #E2E8F0; font-size:13px; transition:all 0.2s;";
+                    div.onmouseover = () => div.style.background = '#F8FAFC';
+                    div.onmouseout = () => div.style.background = 'white';
+
+                    div.innerHTML = `
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <div style="font-weight:600; color:var(--text-dark);">
+                                <i class="fas fa-chair" style="color:var(--primary); margin-right:6px;"></i> Table ${bill.tableNo}
+                            </div>
+                            <div style="color:#64748B; font-size:11px; display:flex; gap:10px;">
+                                <span><i class="fas fa-utensils" style="font-size:10px;"></i> ${bill.items ? bill.items.length : 0} items</span>
+                                <span><i class="far fa-clock" style="font-size:10px;"></i> ${timeStr}</span>
+                            </div>
+                        </div>
+                        <button style="background:white; color:var(--primary); border:1px solid var(--border); padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600; font-size:11px; transition:all 0.2s;"
+                            onmouseover="this.style.background='var(--primary)'; this.style.color='white'"
+                            onmouseout="this.style.background='white'; this.style.color='var(--primary)'"
+                            onclick="loadDraftIntoBilling('${bill.id}')">
+                            Select
+                        </button>
+                    `;
+                    list.appendChild(div);
+                });
+            }, (error) => {
+                console.error("Error loading drafts:", error);
+                list.innerHTML = `<p style='color:red; font-size:13px;'>Error: ${error.message}</p>`;
+            });
+        }
+
+        window.loadDraftIntoBilling = async function (draftId) {
+            try {
+                const ref = doc(db, "bills", draftId);
+                const snap = await getDoc(ref);
+
+                if (!snap.exists()) {
+                    alert("Draft not found");
+                    return;
+                }
+
+                const data = snap.data();
+
+                currentBill = {
+                    id: draftId,
+                    tableNo: data.tableNo,
+                    items: data.items.map(i => ({
+                        name: i.name,
+                        qty: Number(i.qty),
+                        price: i.price
+                    })),
+                    total: 0
+                };
+
+                document.getElementById("tableInput").value = data.tableNo;
+                renderBillItems();
+
+                // Highlight that we are editing a draft
+                const btn = document.querySelector('.billing-form');
+                btn.style.borderColor = '#3B82F6';
+                btn.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.2)';
+
+            } catch (e) {
+                console.error("Error loading draft:", e);
+                alert("Failed to load draft");
+            }
+        };
+
         // --- BILLING LOGIC ---
 
         function isNumericPrice(price) {
@@ -450,11 +930,14 @@
         }
 
         function loadMenuForBilling() {
-            onSnapshot(collection(db, "menu_items"), snap => {
+            onSnapshot(collection(db, "menu_items"), (snap) => {
                 menuItemsArray = [];
                 snap.forEach(doc => {
                     menuItemsArray.push(doc.data());
                 });
+            }, (error) => {
+                console.error("Error loading menu:", error);
+                alert("Error loading menu: " + error.message + "\nCheck console for details.");
             });
 
             const searchInput = document.getElementById("itemSearch");
@@ -466,7 +949,7 @@
                     dropdown.innerHTML = "";
 
                     if (!q) {
-                        dropdown.classList.add("hidden");
+                        dropdown.classList.remove("show");
                         return;
                     }
 
@@ -475,7 +958,7 @@
                     );
 
                     if (matches.length === 0) {
-                        dropdown.classList.add("hidden");
+                        dropdown.classList.remove("show");
                         return;
                     }
 
@@ -486,12 +969,12 @@
                         dropdown.appendChild(div);
                     });
 
-                    dropdown.classList.remove("hidden");
+                    dropdown.classList.add("show");
                 });
 
                 document.addEventListener("click", (e) => {
                     if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-                        dropdown.classList.add("hidden");
+                        dropdown.classList.remove("show");
                     }
                 });
             }
@@ -507,14 +990,14 @@
             priceInput.value = item.price;
 
             if (isNumericPrice(item.price)) {
-                manualBox.style.display = "none";
+                manualBox.classList.remove("show");
             } else {
-                manualBox.style.display = "block";
+                manualBox.classList.add("show");
                 document.getElementById("finalPriceInput").value = "";
                 document.getElementById("finalPriceInput").focus();
             }
 
-            dropdown.classList.add("hidden");
+            dropdown.classList.remove("show");
         }
 
         window.addItemToBill = function () {
@@ -528,8 +1011,14 @@
             const qty = Number(qtyInput.value);
             let price = priceInput.value;
 
-            if (!name) return alert("Please search/select an item");
-            if (!price) return alert("Please enter price");
+            if (!name) {
+                alert("Please search/select an item");
+                return;
+            }
+            if (!price) {
+                alert("Please enter price");
+                return;
+            }
 
             if (!isNumericPrice(price)) {
                 const manualPrice = Number(finalPriceInput.value);
@@ -540,7 +1029,6 @@
                 price = manualPrice;
             }
 
-            // Set table no if first item (optional enforcement)
             currentBill.tableNo = tableInput.value;
 
             currentBill.items.push({
@@ -555,7 +1043,7 @@
             qtyInput.value = 1;
             priceInput.value = "";
             finalPriceInput.value = "";
-            document.getElementById("manualPriceBox").style.display = "none";
+            document.getElementById("manualPriceBox").classList.remove("show");
             nameInput.focus();
         };
 
@@ -566,19 +1054,27 @@
             container.innerHTML = "";
 
             if (currentBill.items.length === 0) {
-                container.innerHTML = "<p style='color:#999; text-align:center; padding-top:50px;'>No items added</p>";
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No items added yet</p>
+                    </div>
+                `;
             } else {
                 currentBill.items.forEach((item, index) => {
                     container.innerHTML += `
                       <div class="bill-row">
-                        <span style="flex:2; font-weight:500;">${item.name}</span>
-                        <div style="flex:1; text-align:center;">
+                        <span class="bill-row-name">${item.name}</span>
+                        <div class="bill-row-qty">
                             <input type="number" min="1" value="${item.qty}"
-                              onchange="updateQty(${index}, this.value)"
-                              style="width:50px; padding:4px; text-align:center; border:1px solid #ddd; border-radius:4px;">
+                              onchange="updateQty(${index}, this.value)">
                         </div>
-                        <span style="flex:1; text-align:right;">₹${item.price}</span>
-                        <button onclick="removeItem(${index})" class="remove-btn">✖</button>
+                        <span class="bill-row-price">₹${Number(item.price).toFixed(2)}</span>
+                        <div class="bill-row-action">
+                            <button onclick="removeItem(${index})" class="remove-btn">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                       </div>
                     `;
                 });
@@ -609,7 +1105,10 @@
                 }
             });
             currentBill.total = total;
-            document.getElementById("billTotal").innerText = "₹" + total;
+            document.getElementById("billTotal").innerText = total.toFixed(2);
+
+            // Trigger auto-save if working on a draft
+            autoSaveDraft();
         }
 
         async function saveBillData() {
@@ -621,28 +1120,7 @@
             const now = Date.now();
             const dateStr = new Date().toISOString().split("T")[0];
 
-            function generateBillNo() {
-                const n = new Date();
-                const d = n.toISOString().slice(0, 10).replace(/-/g, "");
-                return { billNoPrefix: `B-${d}` };
-            }
-
-            const { billNoPrefix } = generateBillNo();
-            const counterRef = doc(db, "counters", billNoPrefix);
-            let billNo;
-
-            try {
-                await updateDoc(counterRef, { count: increment(1) });
-                const snap = await getDoc(counterRef);
-                const count = snap.data().count;
-                billNo = `${billNoPrefix}-${String(count).padStart(3, '0')}`;
-            } catch (err) {
-                await setDoc(counterRef, { count: 1 });
-                billNo = `${billNoPrefix}-001`;
-            }
-
-            const billData = {
-                billNo: billNo,
+            let finalBillData = {
                 tableNo: currentBill.tableNo,
                 items: currentBill.items,
                 total: currentBill.total,
@@ -651,8 +1129,55 @@
                 date: dateStr
             };
 
-            await addDoc(collection(db, "bills"), billData);
-            return billData;
+            // Generate Bill No if not exists or if updating draft to paid
+            if (!currentBill.billNo) {
+                function generateBillNo() {
+                    const n = new Date();
+                    const d = n.toISOString().slice(0, 10).replace(/-/g, "");
+                    return { billNoPrefix: `B-${d}` };
+                }
+
+                const { billNoPrefix } = generateBillNo();
+                const counterRef = doc(db, "counters", billNoPrefix);
+
+                try {
+                    await updateDoc(counterRef, { count: increment(1) });
+                    const snap = await getDoc(counterRef);
+                    const count = snap.data().count;
+                    finalBillData.billNo = `${billNoPrefix}-${String(count).padStart(3, '0')}`;
+                } catch (err) {
+                    await setDoc(counterRef, { count: 1 });
+                    finalBillData.billNo = `${billNoPrefix}-001`;
+                }
+            }
+
+            if (currentBill.id) {
+                // Update existing draft
+                const billRef = doc(db, "bills", currentBill.id);
+                await updateDoc(billRef, finalBillData);
+            } else {
+                // Create new bill (direct billing case)
+                const docRef = await addDoc(collection(db, "bills"), finalBillData);
+                currentBill.id = docRef.id; // Store ID just in case
+            }
+
+            return finalBillData;
+        }
+
+        // Auto-save draft on changes (Optional but recommended)
+        async function autoSaveDraft() {
+            if (!currentBill.id) return;
+
+            try {
+                const billRef = doc(db, "bills", currentBill.id);
+                await updateDoc(billRef, {
+                    items: currentBill.items,
+                    total: currentBill.total, // Optional
+                    updatedAt: Date.now()
+                });
+            } catch (e) {
+                console.warn("Auto-save failed", e);
+            }
         }
 
         window.saveBillOnly = async function () {
@@ -666,20 +1191,19 @@
                 const billData = await saveBillData();
                 localStorage.setItem("printBill", JSON.stringify(billData));
 
-                // Redirect to print page directly as per functionality implied in previous code
                 window.open('print_bill.html', '_blank');
 
-                // Clear form
-                currentBill = { tableNo: null, items: [], total: 0 };
+                currentBill = { id: null, tableNo: null, items: [], total: 0 };
                 renderBillItems();
                 document.getElementById("tableInput").value = "";
                 document.getElementById("itemSearch").value = "";
                 document.getElementById("qtyInput").value = 1;
                 document.getElementById("priceInput").value = "";
-                document.getElementById("billTotal").innerText = "₹0";
+                document.getElementById("billTotal").innerText = "0";
 
             } catch (e) {
                 console.error(e);
+                alert("Error saving bill. Please try again.");
             } finally {
                 const btn = event ? (event.target || event.srcElement) : null;
                 if (btn) {
@@ -690,5 +1214,6 @@
         };
     </script>
 </body>
+<script src="js/navbar-loader.js"></script>
 
 </html>

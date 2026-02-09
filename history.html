@@ -34,105 +34,14 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--light);
             color: var(--text);
-        }
-
-
-
-        /* NAVBAR STYLES */
-        .navbar {
-            background: linear-gradient(135deg, var(--secondary) 0%, #334155 100%);
             padding: 0;
-            box-shadow: var(--shadow-lg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            margin-bottom: 24px;
+            margin: 0;
         }
 
-        .navbar-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            color: white;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
 
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: 700;
-            text-decoration: none;
-            color: white;
-        }
 
-        .navbar-brand i {
-            color: var(--primary);
-            font-size: 28px;
-        }
+        /* NAVBAR STYLES MOVED TO css/admin-nav.css */
 
-        .navbar-menu {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .nav-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .admin-nav {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding: 12px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-btn.section {
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.7);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 12px;
-            flex: 1;
-            min-width: 100px;
-            text-align: center;
-        }
-
-        .nav-btn.section:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-        }
-
-        .nav-btn.section.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-        }
 
         .header-title h1 {
             font-size: 18px;
@@ -507,37 +416,8 @@
 <body>
 
     <!-- NAVBAR -->
-    <div class="navbar">
-        <div class="navbar-top">
-            <a href="admin.html" class="navbar-brand">
-                <i class="fas fa-utensils"></i>
-                Chef Cafe
-            </a>
-            <div class="navbar-menu">
-                <button class="nav-btn" id="logoutBtn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-        </div>
+    <div id="navbar-container"></div>
 
-        <div class="admin-nav">
-            <button class="nav-btn section" onclick="window.location.href='admin.html'">
-                <i class="fas fa-chart-line"></i> Dashboard
-            </button>
-            <button class="nav-btn section" onclick="window.location.href='admin.html'">
-                <i class="fas fa-book"></i> Menu
-            </button>
-            <button class="nav-btn section" onclick="window.location.href='billing.html'">
-                <i class="fas fa-receipt"></i> Billing
-            </button>
-            <button class="nav-btn section" onclick="window.location.href='order.html'">
-                <i class="fas fa-clipboard-list"></i> New Order
-            </button>
-            <button class="nav-btn section active" onclick="window.location.reload()">
-                <i class="fas fa-history"></i> History
-            </button>
-        </div>
-    </div>
 
     <!-- MAIN CONTENT -->
     <div class="page">
@@ -613,13 +493,8 @@
         onAuthStateChanged(auth, user => {
             if (!user) window.location.href = "admin.html";
             else {
-                // Check URL params for initial view
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('view') === 'history') {
-                    switchMainTab('history', false);
-                } else {
-                    switchMainTab('billing', false); // Default to billing tab, which now defaults to 'today'
-                }
+                // Initialize listener
+                setupRealtimeListener();
             }
         });
 
@@ -835,5 +710,6 @@
         };
     </script>
 </body>
+<script src="js/navbar-loader.js"></script>
 
 </html>
