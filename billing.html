@@ -401,17 +401,28 @@
         .bill-row-qty {
             flex: 1;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
         .bill-row-qty input {
-            width: 50px;
-            padding: 6px;
+            width: 40px;
+            padding: 6px 2px;
             text-align: center;
             border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 12px;
+            border-radius: 4px;
+            font-size: 13px;
             font-weight: 600;
             transition: all 0.2s ease;
+            -moz-appearance: textfield;
+        }
+
+        .bill-row-qty input::-webkit-outer-spin-button,
+        .bill-row-qty input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .bill-row-qty input:focus {
@@ -420,11 +431,61 @@
             box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
         }
 
+        .qty-btn-mini {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .qty-btn-mini:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
         .bill-row-price {
             flex: 1;
             text-align: right;
             font-weight: 700;
             color: var(--primary);
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .price-input {
+            width: 90px;
+            padding: 6px;
+            text-align: right;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            background: transparent;
+            transition: all 0.2s;
+        }
+
+        .price-input:hover {
+            border-color: var(--border);
+            background: white;
+        }
+
+        .price-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
         }
 
         .bill-row-action {
@@ -819,8 +880,37 @@
             } else {
                 loadMenuForBilling();
                 loadDraftBills();
+                checkAutoLoad();
+                startBadgeListener();
             }
         });
+
+        function checkAutoLoad() {
+            const autoDraftId = localStorage.getItem('autoLoadDraft');
+            if (autoDraftId) {
+                console.log("Auto-loading draft:", autoDraftId);
+                localStorage.removeItem('autoLoadDraft');
+                setTimeout(() => {
+                    if (window.loadDraftIntoBilling) window.loadDraftIntoBilling(autoDraftId);
+                }, 1000); // 1s delay to be safe
+            }
+        }
+
+        function startBadgeListener() {
+            // We need to wait for navbar to exist
+            const interval = setInterval(() => {
+                const badge = document.getElementById('live-orders-badge');
+                if (badge) {
+                    clearInterval(interval);
+                    // Set up listener
+                    const q = query(collection(db, "bills"), where("status", "==", "DRAFT"));
+                    onSnapshot(q, (snap) => {
+                        badge.innerText = snap.size;
+                        badge.style.display = snap.size > 0 ? 'inline-block' : 'none';
+                    });
+                }
+            }, 500);
+        }
 
         window.logout = () => {
             signOut(auth).then(() => {
@@ -1066,10 +1156,15 @@
                       <div class="bill-row">
                         <span class="bill-row-name">${item.name}</span>
                         <div class="bill-row-qty">
+                            <button class="qty-btn-mini" onclick="updateQty(${index}, ${item.qty - 1}, true)">-</button>
                             <input type="number" min="1" value="${item.qty}"
                               onchange="updateQty(${index}, this.value)">
+                            <button class="qty-btn-mini" onclick="updateQty(${index}, ${item.qty + 1}, true)">+</button>
                         </div>
-                        <span class="bill-row-price">₹${Number(item.price).toFixed(2)}</span>
+                        <div class="bill-row-price">
+                            <input type="number" min="0" step="any" value="${item.price}" 
+                                onchange="updatePrice(${index}, this.value)" class="price-input" placeholder="0.00">
+                        </div>
                         <div class="bill-row-action">
                             <button onclick="removeItem(${index})" class="remove-btn">
                                 <i class="fas fa-trash"></i>
@@ -1083,10 +1178,22 @@
             recalculateBill();
         }
 
-        window.updateQty = function (index, newQty) {
+        window.updateQty = function (index, newQty, shouldRender = false) {
             const q = Number(newQty);
             if (q > 0) {
                 currentBill.items[index].qty = q;
+                if (shouldRender) {
+                    renderBillItems();
+                } else {
+                    recalculateBill();
+                }
+            }
+        };
+
+        window.updatePrice = function (index, newPrice) {
+            const p = Number(newPrice);
+            if (!isNaN(p) && p >= 0) {
+                currentBill.items[index].price = p;
                 recalculateBill();
             }
         };

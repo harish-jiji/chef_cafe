@@ -933,7 +933,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAON6aij8dNGoRlJ1DdLcwMkPZsAGe-SBQ",
@@ -962,11 +962,27 @@
                 document.getElementById('adminPanel').style.display = 'block';
                 loadMenuItems();
                 loadDashboard();
+                startBadgeListener();
             } else {
                 document.getElementById('loginBox').style.display = 'block';
                 document.getElementById('adminPanel').style.display = 'none';
             }
         });
+
+        function startBadgeListener() {
+            const interval = setInterval(() => {
+                const badge = document.getElementById('live-orders-badge');
+                // Only update if element exists AND user is logged in (admin panel visible)
+                if (badge && document.getElementById('adminPanel').style.display !== 'none') {
+                    clearInterval(interval);
+                    const q = query(collection(db, "bills"), where("status", "==", "DRAFT"));
+                    onSnapshot(q, (snap) => {
+                        badge.innerText = snap.size;
+                        badge.style.display = snap.size > 0 ? 'inline-block' : 'none';
+                    });
+                }
+            }, 500);
+        }
 
         window.logout = () => {
             signOut(auth).then(() => {

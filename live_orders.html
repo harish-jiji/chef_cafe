@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Orders Manager - Chef Cafe</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #FF6B35;
+            --primary-light: #FF8C5A;
+            --primary-dark: #E55100;
+            --secondary: #1E293B;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --border: #E2E8F0;
+            --text-dark: #1E293B;
+            --text-light: #64748B;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           NAVBAR
+           ═════════════════════════════════════════════════════════ */
+
+        .navbar {
+            background: linear-gradient(135deg, var(--secondary) 0%, #334155 100%);
+            padding: 0;
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+        }
+
+        .navbar-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+
+        .navbar-brand i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           MAIN LAYOUT
+           ═════════════════════════════════════════════════════════ */
+
+        .wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           SIDEBAR - DRAFT LIST
+           ═════════════════════════════════════════════════════════ */
+
+        .draft-sidebar {
+            width: 380px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-md);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 2px solid var(--border);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .sidebar-header i {
+            font-size: 24px;
+        }
+
+        .draft-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .draft-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .draft-list::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        .draft-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .draft-list::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        .draft-card {
+            background: var(--bg);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .draft-card:hover {
+            border-color: var(--primary);
+            background: #FFF7F3;
+            transform: translateX(4px);
+        }
+
+        .draft-card.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #FFF7F3 0%, #FFFBF7 100%);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .draft-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-dark);
+        }
+
+        .draft-card-table {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .draft-card-table i {
+            color: var(--primary);
+        }
+
+        .draft-card-time {
+            font-size: 12px;
+            color: var(--text-light);
+            background: rgba(255, 107, 53, 0.05);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .draft-card-info {
+            font-size: 12px;
+            color: var(--text-light);
+            display: flex;
+            justify-content: space-between;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .draft-card-items,
+        .draft-card-total {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .draft-card-total {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .draft-card-total i {
+            font-size: 11px;
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+
+        .btn-new-order {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-new-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           EDITOR MAIN
+           ═════════════════════════════════════════════════════════ */
+
+        .editor-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background: var(--bg);
+            overflow: hidden;
+        }
+
+        .editor-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            padding: 20px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .editor-header-left h2 {
+            margin: 0 0 4px 0;
+            font-size: 22px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .editor-header-left i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .editor-header-left span {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .editor-header-badge {
+            background: linear-gradient(135deg, var(--warning) 0%, #D97706 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .editor-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .search-area {
+            padding: 16px 20px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .search-area input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-area input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+        }
+
+        .item-list-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 0;
+        }
+
+        .item-list-area::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .item-list-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .item-list-area::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .item-list-area::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        .order-row {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .order-row:hover {
+            background: linear-gradient(135deg, #FFF7F3 0%, #FFFBF7 100%);
+        }
+
+        .order-row-name {
+            flex: 2;
+            min-width: 0;
+        }
+
+        .order-row-name-primary {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .order-row-name-secondary {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .order-row-qty {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--primary);
+            transition: all 0.2s ease;
+        }
+
+        .qty-btn:hover {
+            background: var(--bg);
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .qty-display {
+            font-weight: 700;
+            min-width: 28px;
+            text-align: center;
+            color: var(--text-dark);
+            background: var(--bg);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .order-row-price {
+            flex: 1;
+            text-align: right;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 15px;
+        }
+
+        .order-row-actions {
+            flex: 0.5;
+            text-align: right;
+        }
+
+        .btn-remove-item {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-remove-item:hover {
+            background: #FEE2E2;
+            color: #DC2626;
+            transform: scale(1.15);
+        }
+
+        .editor-footer {
+            padding: 16px 20px;
+            border-top: 2px solid var(--border);
+            background: white;
+            border-radius: 0 0 16px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .footer-left {
+            display: flex;
+            gap: 12px;
+        }
+
+        .footer-right {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            gap: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger {
+            background: #FEE2E2;
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: white;
+            border: 2px solid var(--border);
+            color: var(--text-dark);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #FFF7F3;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           SUGGESTIONS DROPDOWN
+           ═════════════════════════════════════════════════════════ */
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            margin-top: 4px;
+        }
+
+        .suggestions.show {
+            display: block;
+        }
+
+        .suggestions::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .suggestions::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        .suggestions::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background: var(--bg);
+            padding-left: 20px;
+        }
+
+        .suggestion-name {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .suggestion-price {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           EMPTY STATES
+           ═════════════════════════════════════════════════════════ */
+
+        .empty-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-light);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-selection i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+            color: var(--border);
+        }
+
+        .empty-selection h3 {
+            font-size: 20px;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .empty-selection p {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .empty-list-message {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        .empty-list-message i {
+            font-size: 48px;
+            opacity: 0.3;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .empty-list-message p {
+            font-size: 14px;
+        }
+
+        .empty-items-message {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        .empty-items-message i {
+            font-size: 48px;
+            opacity: 0.3;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* ═════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═════════════════════════════════════════════════════════ */
+
+        @media (max-width: 1024px) {
+            .draft-sidebar {
+                width: 320px;
+            }
+
+            .editor-header {
+                padding: 16px;
+            }
+
+            .order-row {
+                padding: 12px 16px;
+            }
+
+            .editor-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .footer-left,
+            .footer-right {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .wrapper {
+                flex-direction: column;
+            }
+
+            .draft-sidebar {
+                width: 100%;
+                max-height: 35vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .editor-main {
+                padding: 16px;
+                flex: 1;
+            }
+
+            .editor-container {
+                border-radius: 12px;
+            }
+
+            .editor-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .editor-header-right {
+                width: 100%;
+                text-align: right;
+            }
+
+            .order-row-qty {
+                gap: 6px;
+            }
+
+            .qty-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 13px;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .search-area {
+                padding: 12px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .draft-sidebar {
+                max-height: 30vh;
+            }
+
+            .sidebar-header {
+                padding: 16px;
+            }
+
+            .sidebar-header h3 {
+                font-size: 16px;
+            }
+
+            .draft-card {
+                padding: 12px;
+                margin-bottom: 8px;
+            }
+
+            .editor-main {
+                padding: 12px;
+            }
+
+            .editor-header {
+                padding: 14px;
+            }
+
+            .editor-header-left h2 {
+                font-size: 18px;
+            }
+
+            .search-area {
+                padding: 12px 16px;
+            }
+
+            .search-area input {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            .order-row {
+                padding: 12px 16px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .order-row-name {
+                flex: 1 0 100%;
+            }
+
+            .order-row-qty {
+                flex: 0 0 auto;
+                gap: 6px;
+            }
+
+            .qty-btn {
+                width: 26px;
+                height: 26px;
+                font-size: 12px;
+            }
+
+            .order-row-price {
+                flex: 0 0 auto;
+            }
+
+            .order-row-actions {
+                flex: 0 0 auto;
+            }
+
+            .editor-footer {
+                gap: 8px;
+            }
+
+            .footer-left,
+            .footer-right {
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .editor-header-badge {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navbar-top">
+            <a href="#" class="navbar-brand">
+                <i class="fas fa-utensils"></i>
+                Chef Cafe
+            </a>
+            <div class="navbar-menu">
+                <button class="nav-btn" onclick="window.location.href='admin.html'">
+                    <i class="fas fa-arrow-left"></i> Back to Admin
+                </button>
+                <button class="nav-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="wrapper">
+        <!-- LEFT: DRAFT LIST -->
+        <div class="draft-sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-list-check"></i>
+                <h3>Live Orders</h3>
+            </div>
+            <div id="draftList" class="draft-list">
+                <div class="empty-list-message">
+                    <i class="fas fa-hourglass-empty"></i>
+                    <p>Loading orders...</p>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <button class="btn-new-order" onclick="window.location.href='order.html'">
+                    <i class="fas fa-plus-circle"></i> Create New Order
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT: EDITOR -->
+        <div class="editor-main">
+            <div id="editorContainer" class="editor-container" style="display: none;">
+                <div class="editor-header">
+                    <div class="editor-header-left">
+                        <h2>
+                            <i class="fas fa-chair"></i>
+                            <span id="editorTableNo">Table #</span>
+                        </h2>
+                        <span id="editorTime"></span>
+                    </div>
+                    <div class="editor-header-right">
+                        <div class="editor-header-badge">
+                            <i class="fas fa-pencil-alt"></i> Draft
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-content">
+                    <div class="search-area">
+                        <input type="text" id="itemSearch" class="input-field" placeholder="🔍 Search to add item..."
+                            autocomplete="off">
+                        <div id="suggestions" class="suggestions"></div>
+                    </div>
+
+                    <div id="editorItemList" class="item-list-area">
+                        <!-- Items go here -->
+                    </div>
+                </div>
+
+                <div class="editor-footer">
+                    <div class="footer-left">
+                        <button class="btn btn-danger" onclick="deleteCurrentOrder()">
+                            <i class="fas fa-trash"></i> Delete Order
+                        </button>
+                    </div>
+                    <div class="footer-right">
+                        <button class="btn btn-outline" onclick="goToBilling()">
+                            <i class="fas fa-receipt"></i> Go to Billing
+                        </button>
+                        <button class="btn btn-primary" onclick="saveCurrentOrder()">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="emptySelection" class="empty-selection">
+                <i class="fas fa-arrow-left"></i>
+                <h3>Select an order to edit</h3>
+                <p>Choose a live order from the sidebar to modify items.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, deleteDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAON6aij8dNGoRlJ1DdLcwMkPZsAGe-SBQ",
+            authDomain: "chef-s-cafe.firebaseapp.com",
+            projectId: "chef-s-cafe",
+            storageBucket: "chef-s-cafe.firebasestorage.app",
+            messagingSenderId: "623426909086",
+            appId: "1:623426909086:web:b4c16775db67b1485b5c8f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentDraftId = null;
+        let currentDraftData = null;
+        let menuItems = [];
+
+        onAuthStateChanged(auth, user => {
+            if (!user) {
+                window.location.href = 'admin.html';
+            } else {
+                loadMenu();
+                loadDrafts();
+                startBadgeListener();
+            }
+        });
+
+        window.logout = () => signOut(auth).then(() => window.location.href = 'admin.html');
+
+        // LOAD MENU
+        async function loadMenu() {
+            const snap = await getDocs(collection(db, "menu_items"));
+            menuItems = [];
+            snap.forEach(d => menuItems.push(d.data()));
+        }
+
+        // LOAD DRAFTS SIDEBAR
+        function loadDrafts() {
+            const q = query(collection(db, "bills"), where("status", "==", "DRAFT"));
+            onSnapshot(q, (snap) => {
+                const list = document.getElementById("draftList");
+                list.innerHTML = "";
+
+                const drafts = [];
+                snap.forEach(d => drafts.push({ id: d.id, ...d.data() }));
+                drafts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                if (drafts.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-list-message">
+                            <i class="fas fa-inbox"></i>
+                            <p>No active orders</p>
+                        </div>
+                    `;
+                    if (currentDraftId) clearEditor();
+                    return;
+                }
+
+                drafts.forEach(d => {
+                    const div = document.createElement("div");
+                    div.className = `draft-card ${currentDraftId === d.id ? 'active' : ''}`;
+                    div.onclick = () => selectDraft(d);
+
+                    const date = new Date(d.createdAt || Date.now());
+                    const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    div.innerHTML = `
+                        <div class="draft-card-header">
+                            <div class="draft-card-table">
+                                <i class="fas fa-chair"></i>
+                                <span>Table ${d.tableNo}</span>
+                            </div>
+                            <span class="draft-card-time">${time}</span>
+                        </div>
+                        <div class="draft-card-info">
+                            <div class="draft-card-items">
+                                <i class="fas fa-box"></i>
+                                <span>${d.items ? d.items.length : 0} item${d.items && d.items.length !== 1 ? 's' : ''}</span>
+                            </div>
+                            <div class="draft-card-total">
+                                <i class="fas fa-rupee-sign"></i>
+                                <span>${d.total ? d.total.toFixed(2) : '0.00'}</span>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+
+                if (currentDraftId) {
+                    const found = drafts.find(d => d.id === currentDraftId);
+                    if (found) {
+                        currentDraftData = found;
+                        if (document.activeElement !== document.getElementById('itemSearch')) {
+                            renderEditorItems();
+                        }
+                    } else {
+                        clearEditor();
+                    }
+                }
+            });
+        }
+
+        // SELECT DRAFT
+        function selectDraft(data) {
+            currentDraftId = data.id;
+            currentDraftData = data;
+
+            document.querySelectorAll('.draft-card').forEach(el => el.classList.remove('active'));
+
+            document.getElementById("emptySelection").style.display = "none";
+            document.getElementById("editorContainer").style.display = "flex";
+
+            document.getElementById("editorTableNo").innerText = `Table ${data.tableNo}`;
+            const date = new Date(data.createdAt || Date.now());
+            document.getElementById("editorTime").innerText = `Created at ${date.toLocaleTimeString()}`;
+
+            renderEditorItems();
+        }
+
+        function clearEditor() {
+            currentDraftId = null;
+            currentDraftData = null;
+            document.getElementById("editorContainer").style.display = "none";
+            document.getElementById("emptySelection").style.display = "flex";
+        }
+
+        // RENDER ITEMS IN EDITOR
+        function renderEditorItems() {
+            const list = document.getElementById("editorItemList");
+            list.innerHTML = "";
+
+            if (!currentDraftData.items || currentDraftData.items.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-items-message">
+                        <i class="fas fa-inbox"></i>
+                        <p>No items in this order</p>
+                    </div>
+                `;
+                return;
+            }
+
+            currentDraftData.items.forEach((item, index) => {
+                const div = document.createElement("div");
+                div.className = "order-row";
+
+                let priceDisplay = '₹' + Number(item.price * item.qty).toFixed(2);
+                if (isNaN(Number(item.price))) priceDisplay = item.price;
+
+                div.innerHTML = `
+                    <div class="order-row-name">
+                        <div class="order-row-name-primary">${item.name}</div>
+                        <div class="order-row-name-secondary">${item.category || 'General'}</div>
+                    </div>
+                    <div class="order-row-qty">
+                        <button class="qty-btn" onclick="updateItemQty(${index}, -1)">−</button>
+                        <span class="qty-display">${item.qty}</span>
+                        <button class="qty-btn" onclick="updateItemQty(${index}, 1)">+</button>
+                    </div>
+                    <div class="order-row-price">${priceDisplay}</div>
+                    <div class="order-row-actions">
+                        <button class="btn-remove-item" onclick="itemsRemove(${index})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // EDITOR ACTIONS
+        window.updateItemQty = (index, change) => {
+            if (!currentDraftData) return;
+            const newQty = currentDraftData.items[index].qty + change;
+            if (newQty > 0) {
+                currentDraftData.items[index].qty = newQty;
+                renderEditorItems();
+            }
+        };
+
+        window.itemsRemove = (index) => {
+            if (!currentDraftData) return;
+            currentDraftData.items.splice(index, 1);
+            renderEditorItems();
+        };
+
+        // SEARCH & ADD
+        const searchInput = document.getElementById("itemSearch");
+        const suggestionsBox = document.getElementById("suggestions");
+
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            suggestionsBox.innerHTML = '';
+            if (val.length < 1) {
+                suggestionsBox.classList.remove('show');
+                return;
+            }
+
+            const matches = menuItems.filter(i => i.name.toLowerCase().includes(val));
+            if (matches.length > 0) {
+                suggestionsBox.classList.add('show');
+                matches.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerHTML = `
+                        <span class="suggestion-name">${item.name}</span>
+                        <span class="suggestion-price">₹${Number(item.price).toFixed(2)}</span>
+                    `;
+                    div.onclick = () => addItemToOrder(item);
+                    suggestionsBox.appendChild(div);
+                });
+            } else {
+                suggestionsBox.classList.remove('show');
+            }
+        });
+
+        function addItemToOrder(item) {
+            if (!currentDraftData) return;
+
+            const existing = currentDraftData.items.find(i => i.name === item.name);
+            if (existing) {
+                existing.qty++;
+            } else {
+                currentDraftData.items.push({
+                    name: item.name,
+                    price: item.price,
+                    category: item.category || 'General',
+                    qty: 1
+                });
+            }
+
+            searchInput.value = '';
+            suggestionsBox.classList.remove('show');
+            renderEditorItems();
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-area')) suggestionsBox.classList.remove('show');
+        });
+
+        // SAVE
+        window.saveCurrentOrder = async () => {
+            if (!currentDraftId || !currentDraftData) return;
+
+            try {
+                let total = 0;
+                currentDraftData.items.forEach(i => {
+                    const p = Number(i.price);
+                    if (!isNaN(p)) total += p * i.qty;
+                });
+
+                await updateDoc(doc(db, "bills", currentDraftId), {
+                    items: currentDraftData.items,
+                    total: total,
+                    updatedAt: Date.now()
+                });
+
+                alert("Order saved successfully!");
+            } catch (e) {
+                alert("Error saving: " + e.message);
+            }
+        };
+
+        window.deleteCurrentOrder = async () => {
+            if (!currentDraftId) return;
+            if (confirm("Delete this entire order? Cannot be undone.")) {
+                await deleteDoc(doc(db, "bills", currentDraftId));
+                clearEditor();
+            }
+        };
+
+        window.goToBilling = () => {
+            if (!currentDraftId) return;
+            localStorage.setItem('autoLoadDraft', currentDraftId);
+            window.location.href = 'billing.html';
+        };
+
+        // BADGE LISTENER
+        function startBadgeListener() {
+            const interval = setInterval(() => {
+                const badge = document.getElementById('live-orders-badge');
+                if (badge) {
+                    clearInterval(interval);
+                    const q = query(collection(db, "bills"), where("status", "==", "DRAFT"));
+                    onSnapshot(q, (snap) => {
+                        badge.innerText = snap.size;
+                        badge.style.display = snap.size > 0 ? 'inline-block' : 'none';
+                    });
+                }
+            }, 500);
+        }
+    </script>
+</body>
+
+</html>
