@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Print Bill - Chef Cafe</title>
+    <title>Print Bill - Chef's Cafe</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -226,38 +226,65 @@
         /* PRINT STYLES */
         @media print {
             body {
+                visibility: hidden;
                 margin: 0;
                 padding: 0;
                 background: white;
             }
 
-            body * {
-                visibility: hidden;
+            /* Hide individual elements explicitly */
+            #navbar-container,
+            #billPreview,
+            #actions,
+            .navbar,
+            .actions,
+            .empty-message {
+                display: none !important;
             }
 
-            .bill-printer,
-            .bill-printer * {
-                visibility: visible;
+            /* 
+               CRITICAL FIX: 
+               The .bill-container wraps .bill-printer. 
+               If we set .bill-container to display:none, the child is hidden.
+               So we set visibility:hidden on the container causing it to take up space but be invisible,
+               and then we absolutely position the printer on top.
+            */
+            .bill-container {
+                visibility: hidden;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                border: none;
+                box-shadow: none;
+                background: transparent;
             }
 
             .bill-printer {
+                visibility: visible;
+                display: block !important;
                 position: absolute;
-                left: 0;
                 top: 0;
+                left: 0;
                 width: 58mm;
-                padding: 4mm;
+                /* Standard thermal receipt */
+                min-height: 100vh;
+                margin: 0;
+                padding: 0;
                 font-family: monospace;
-                font-size: 10px;
-                line-height: 1.4;
+                color: black;
+                background: white;
+            }
+
+            .bill-printer * {
+                visibility: visible;
             }
 
             @page {
                 size: 58mm auto;
                 margin: 0;
-            }
-
-            .actions {
-                display: none;
             }
         }
 
@@ -279,7 +306,7 @@
         <div id="billPrintArea" class="bill-printer">
             <div class="bill-header">
                 <div class="restaurant-icon">🍽️</div>
-                <div class="restaurant-name">Chef Cafe</div>
+                <div class="restaurant-name">Chef's Cafe</div>
                 <div class="bill-info">
                     <div class="bill-info-line" id="billNo">Bill #B-001</div>
                     <div id="billMeta">Table: - | Date: -</div>
@@ -302,8 +329,8 @@
 
             <div class="bill-footer">
                 <div class="thank-you">🙏 Thank You!</div>
-                <div class="footer-text">Please visit us again</div>
-                <div class="footer-text">Chef Cafe • Since 2024</div>
+                <div class="footer-text">Visit us again</div>
+                <div class="footer-text">Chef's Cafe • Since 2025</div>
             </div>
         </div>
 
@@ -379,7 +406,7 @@
         function shareBill() {
             if (navigator.share && bill) {
                 navigator.share({
-                    title: 'Chef Cafe Bill',
+                    title: "Chef's Cafe Bill",
                     text: `Bill #${bill.billNo} - Table ${bill.tableNo}\nTotal: ₹${bill.total}\n\nThank you for dining!`,
                     url: window.location.href
                 }).catch(err => console.log('Share cancelled'));

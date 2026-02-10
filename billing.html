@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Billing - Chef Cafe</title>
+    <title>Billing - Chef's Cafe</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -845,6 +845,13 @@
         </div>
     </div>
 
+    <!-- LOADING SCREEN -->
+    <div id="loadingScreen"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #F8FAFC; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
+        <i class="fas fa-circle-notch fa-spin" style="font-size: 48px; color: var(--primary); margin-bottom: 20px;"></i>
+        <p style="font-size: 18px; color: var(--text-dark); font-weight: 600;">Loading Billing...</p>
+    </div>
+
     <!-- SCRIPTS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
@@ -876,6 +883,9 @@
         let menuItemsArray = [];
 
         onAuthStateChanged(auth, user => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) loadingScreen.style.display = 'none';
+
             if (!user) {
                 window.location.href = "admin.html";
             } else {
@@ -1157,17 +1167,17 @@
                       <div class="bill-row">
                         <span class="bill-row-name">${item.name}</span>
                         <div class="bill-row-qty">
-                            <button class="qty-btn-mini" onclick="updateQty(${index}, ${item.qty - 1}, true)">-</button>
+                            <button type="button" class="qty-btn-mini" onclick="updateQty(${index}, ${item.qty - 1}, true)">-</button>
                             <input type="number" min="1" value="${item.qty}"
-                              onchange="updateQty(${index}, this.value)">
-                            <button class="qty-btn-mini" onclick="updateQty(${index}, ${item.qty + 1}, true)">+</button>
+                              onchange="updateQty(${index}, this.value)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <button type="button" class="qty-btn-mini" onclick="updateQty(${index}, ${item.qty + 1}, true)">+</button>
                         </div>
                         <div class="bill-row-price">
                             <input type="number" min="0" step="any" value="${item.price}" 
                                 onchange="updatePrice(${index}, this.value)" class="price-input" placeholder="0.00">
                         </div>
                         <div class="bill-row-action">
-                            <button onclick="removeItem(${index})" class="remove-btn">
+                            <button type="button" onclick="removeItem(${index})" class="remove-btn">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1273,19 +1283,24 @@
         }
 
         // Auto-save draft on changes (Optional but recommended)
+        // Auto-save draft on changes (Debounced)
+        let autoSaveTimer = null;
         async function autoSaveDraft() {
             if (!currentBill.id) return;
 
-            try {
-                const billRef = doc(db, "bills", currentBill.id);
-                await updateDoc(billRef, {
-                    items: currentBill.items,
-                    total: currentBill.total, // Optional
-                    updatedAt: Date.now()
-                });
-            } catch (e) {
-                console.warn("Auto-save failed", e);
-            }
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(async () => {
+                try {
+                    const billRef = doc(db, "bills", currentBill.id);
+                    await updateDoc(billRef, {
+                        items: currentBill.items,
+                        total: Number(currentBill.total),
+                        updatedAt: Date.now()
+                    });
+                } catch (e) {
+                    console.warn("Auto-save failed", e);
+                }
+            }, 1000); // 1 second debounce
         }
 
         window.saveBillOnly = async function () {

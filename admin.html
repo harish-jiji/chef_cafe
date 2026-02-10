@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Chef Cafe – Admin Dashboard</title>
+    <title>Chef's Cafe – Admin Dashboard</title>
     <link rel="icon" href="data:,">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -752,9 +752,16 @@
 
 <body>
 
-    <!-- LOGIN BOX -->
-    <div id="loginBox">
-        <h2>🍽️ Chef Cafe Admin</h2>
+    <!-- LOADING SCREEN -->
+    <div id="loadingScreen"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #F8FAFC; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
+        <i class="fas fa-circle-notch fa-spin" style="font-size: 48px; color: var(--primary); margin-bottom: 20px;"></i>
+        <p style="font-size: 18px; color: var(--text-dark); font-weight: 600;">Loading Chef's Cafe...</p>
+    </div>
+
+    <!-- LOGIN BOX (Hidden by default) -->
+    <div id="loginBox" style="display:none">
+        <h2>🍽️ Chef's Cafe Admin</h2>
         <p>Please login to access the dashboard</p>
         <div class="form-group">
             <label>Email Address</label>
@@ -798,9 +805,35 @@
 
             <!-- DASHBOARD PAGE -->
             <div id="dashboard" class="page-section active">
-                <div class="page-header">
-                    <h1>Dashboard</h1>
-                    <p>Welcome back! Here's your restaurant overview.</p>
+                <div class="page-header"
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p>Welcome back! Here's your restaurant overview.</p>
+                    </div>
+                    <div id="currentDateTime"
+                        style="font-size: 15px; font-weight: 600; color: var(--primary); background: white; padding: 10px 20px; border-radius: 50px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
+                        <i class="far fa-calendar-alt"></i> <span id="dateText">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- DATE NAVIGATION -->
+                <div
+                    style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; background: white; padding: 12px 20px; border-radius: 12px; box-shadow: var(--shadow-sm); width: fit-content; border: 1px solid var(--border);">
+                    <button onclick="changeDashboardDate(-1)"
+                        style="border:none; background:none; cursor:pointer; color: var(--text-light); font-size: 16px; padding: 5px; transition: color 0.2s;"
+                        onmouseover="this.style.color='var(--primary)'"
+                        onmouseout="this.style.color='var(--text-light)'"><i class="fas fa-chevron-left"></i></button>
+                    <div id="dashboardDateLabel"
+                        style="font-weight: 700; color: var(--text-dark); min-width: 200px; text-align: center; user-select: none;">
+                        Today</div>
+                    <button onclick="changeDashboardDate(1)"
+                        style="border:none; background:none; cursor:pointer; color: var(--text-light); font-size: 16px; padding: 5px; transition: color 0.2s;"
+                        onmouseover="this.style.color='var(--primary)'"
+                        onmouseout="this.style.color='var(--text-light)'"><i class="fas fa-chevron-right"></i></button>
+                    <button onclick="resetDashboardDate()"
+                        style="border:none; background: #ffe8dc; color: var(--primary); cursor:pointer; font-size: 12px; padding: 6px 12px; border-radius: 20px; margin-left: 10px; font-weight: 600;">Back
+                        to Today</button>
                 </div>
 
                 <div class="dashboard-grid">
@@ -957,15 +990,21 @@
         });
 
         onAuthStateChanged(auth, user => {
+            const loadingScreen = document.getElementById('loadingScreen');
+
             if (user) {
                 document.getElementById('loginBox').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 loadMenuItems();
                 loadDashboard();
                 startBadgeListener();
+                // Hide loading screen only after dashboard is ready
+                if (loadingScreen) loadingScreen.style.display = 'none';
             } else {
                 document.getElementById('loginBox').style.display = 'block';
                 document.getElementById('adminPanel').style.display = 'none';
+                // Hide loading screen to show login box
+                if (loadingScreen) loadingScreen.style.display = 'none';
             }
         });
 
@@ -1040,6 +1079,16 @@
                 filter.appendChild(btn);
             });
         }
+
+        // DASHBOARD CLOCK
+        setInterval(() => {
+            const dateSpan = document.getElementById('dateText');
+            if (dateSpan) {
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                dateSpan.textContent = now.toLocaleString('en-US', options);
+            }
+        }, 1000);
 
         function displayMenuItems(items) {
             const container = document.getElementById('menuContainer');
@@ -1200,12 +1249,49 @@
             }
         };
 
-        async function loadDashboard() {
+        // DASHBOARD LOGIC
+        let currentDashboardDate = null; // Will store the Business Date (Midnight)
+
+        function getBusinessDate(date) {
+            let d = new Date(date);
+            // If time is <= 00:30, it belongs to previous day
+            if (d.getHours() === 0 && d.getMinutes() <= 30) {
+                d.setDate(d.getDate() - 1);
+            }
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+
+        window.changeDashboardDate = (details) => {
+            if (!currentDashboardDate) currentDashboardDate = getBusinessDate(new Date());
+            currentDashboardDate.setDate(currentDashboardDate.getDate() + details);
+            loadDashboard(currentDashboardDate);
+        };
+
+        window.resetDashboardDate = () => {
+            currentDashboardDate = getBusinessDate(new Date());
+            loadDashboard(currentDashboardDate);
+        };
+
+        async function loadDashboard(targetDate = null) {
             try {
-                const today = new Date().toISOString().slice(0, 10);
+                if (!targetDate) targetDate = getBusinessDate(new Date());
+                currentDashboardDate = new Date(targetDate);
+
+                updateDashboardUI(currentDashboardDate);
+
+                // Business Day Range: 00:31 of target -> 00:30 of target+1
+                const startRange = new Date(targetDate);
+                startRange.setHours(0, 31, 0, 0);
+
+                const endRange = new Date(targetDate);
+                endRange.setDate(endRange.getDate() + 1);
+                endRange.setHours(0, 30, 59, 999);
+
                 const q = query(
                     collection(db, "bills"),
-                    where("date", "==", today),
+                    where("timestamp", ">=", startRange.getTime()),
+                    where("timestamp", "<=", endRange.getTime()),
                     where("status", "==", "PAID")
                 );
 
@@ -1232,10 +1318,39 @@
 
                 // Load Charts
                 renderItemsChart(itemsSoldMap);
-                loadSalesChart();
+                loadSalesChart(currentDashboardDate);
 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
+                showNotification('Error loading dashboard data', 'error');
+            }
+        }
+
+        function updateDashboardUI(date) {
+            const today = getBusinessDate(new Date());
+            const diffTime = today - date;
+
+            const isToday = date.getTime() === today.getTime();
+            const isYesterday = date.getTime() === new Date(today).setDate(today.getDate() - 1);
+
+            let label = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+            if (isToday) label = "Today (" + label.split(',')[0] + ")";
+            else if (isYesterday) label = "Yesterday (" + label.split(',')[0] + ")";
+            else {
+                // Check if yesterday using simpler math
+                const yest = new Date(today);
+                yest.setDate(yest.getDate() - 1);
+                if (date.getTime() === yest.getTime()) label = "Yesterday (" + label.split(',')[0] + ")";
+            }
+
+            document.getElementById('dashboardDateLabel').textContent = label;
+
+            // Update Text
+            const revLabel = document.querySelector('.stat-label i.fa-money-bill').parentElement;
+            // revLabel.childNodes[1] is the text node
+            if (revLabel.childNodes[1]) {
+                revLabel.childNodes[1].textContent = isToday ? " Today's Revenue" : " Revenue (" + date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ")";
             }
         }
 
@@ -1305,30 +1420,40 @@
         }
 
         let salesChartInstance = null;
-        async function loadSalesChart() {
+        async function loadSalesChart(anchorDate) {
             const ctx = document.getElementById('salesChart').getContext('2d');
 
-            // Last 7 days
-            const end = new Date();
-            const start = new Date();
-            start.setDate(end.getDate() - 6);
-            start.setHours(0, 0, 0, 0);
+            if (!anchorDate) anchorDate = getBusinessDate(new Date());
+
+            // Last 7 Business Days ending at anchorDate
+            const start = new Date(anchorDate);
+            start.setDate(anchorDate.getDate() - 6);
+            start.setHours(0, 31, 0, 0);
 
             const q = query(collection(db, "bills"), where("timestamp", ">=", start.getTime()), orderBy("timestamp", "asc"));
             const snap = await getDocs(q);
 
             const daysMap = {};
             for (let i = 0; i < 7; i++) {
-                const d = new Date();
-                d.setDate(end.getDate() - i);
+                const d = new Date(anchorDate);
+                d.setDate(anchorDate.getDate() - i);
                 daysMap[d.toISOString().slice(0, 10)] = 0;
             }
 
             snap.forEach(doc => {
                 const b = doc.data();
                 if (b.status === "PAID") {
-                    const k = new Date(b.timestamp).toISOString().slice(0, 10);
-                    if (daysMap[k] !== undefined) daysMap[k] += 1; // Count bills or items? Request says "sales volume". Usually bills count or revenue. I'll do bills count for volume.
+                    // Logic to find which "Business Date" this bill belongs to
+                    const billDate = new Date(b.timestamp);
+                    let businessDate = new Date(billDate);
+
+                    if (billDate.getHours() === 0 && billDate.getMinutes() <= 30) {
+                        businessDate.setDate(businessDate.getDate() - 1);
+                    }
+
+                    const k = businessDate.toISOString().slice(0, 10);
+                    // Only count if it falls within our map
+                    if (daysMap[k] !== undefined) daysMap[k] += 1;
                 }
             });
 

@@ -53,3 +53,16 @@
         }
     }
 })();
+
+// Global Navigation Handler
+window.handleNavClick = function (section, url) {
+    if (typeof window.showPage === 'function' && (section === 'dashboard' || section === 'menu')) {
+        window.showPage(section);
+        const newUrl = section === 'menu' ? 'admin.html?section=menu' : 'admin.html';
+        if (window.location.search !== (section === 'menu' ? '?section=menu' : '')) {
+            window.history.pushState({}, '', newUrl);
+        }
+    } else {
+        window.location.href = url;
+    }
+};

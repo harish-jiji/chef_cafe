@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Orders Manager - Chef Cafe</title>
+    <title>Live Orders Manager - Chef's Cafe</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -40,7 +40,9 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            /* overflow: hidden; -- REMOVED to allow body scroll on mobile if needed, but wrapper handles it */
+            overflow-x: hidden;
+            /* Prevent horizontal scroll */
         }
 
         /* ═════════════════════════════════════════════════════════
@@ -114,10 +116,12 @@
         .wrapper {
             display: flex;
             flex: 1;
-            overflow: hidden;
+            /* overflow: hidden; -- REMOVED for mobile friendly scrolling */
             max-width: 1600px;
             margin: 0 auto;
             width: 100%;
+            height: calc(100vh - 70px);
+            /* Adjust height to fit below navbar */
         }
 
         /* ═════════════════════════════════════════════════════════
@@ -736,18 +740,40 @@
         @media (max-width: 768px) {
             .wrapper {
                 flex-direction: column;
+                height: auto;
+                /* Allow full height on mobile */
+                overflow-y: auto;
+                /* Enable vertical scroll for the whole wrapper on mobile */
             }
 
             .draft-sidebar {
                 width: 100%;
-                max-height: 35vh;
+                height: auto;
+                max-height: 300px;
+                /* Fixed height for sidebar list on mobile */
                 border-right: none;
-                border-bottom: 1px solid var(--border);
+                border-bottom: 2px solid var(--border);
+                flex-shrink: 0;
+            }
+
+            .draft-list {
+                max-height: 200px;
+                /* Scrollable list inside sidebar */
             }
 
             .editor-main {
-                padding: 16px;
-                flex: 1;
+                padding: 10px;
+                flex: none;
+                /* Do not flex, let it take natural height */
+                height: auto;
+                min-height: 500px;
+                /* Ensure enough space for editor */
+            }
+
+            /* Allow entire page to scroll on mobile */
+            body {
+                overflow-y: auto;
+                height: auto;
             }
 
             .editor-container {
@@ -884,7 +910,7 @@
         <div class="navbar-top">
             <a href="#" class="navbar-brand">
                 <i class="fas fa-utensils"></i>
-                Chef Cafe
+                Chef's Cafe
             </a>
             <div class="navbar-menu">
                 <button class="nav-btn" onclick="window.location.href='admin.html'">
@@ -973,6 +999,13 @@
         </div>
     </div>
 
+    <!-- LOADING SCREEN -->
+    <div id="loadingScreen"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #F8FAFC; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
+        <i class="fas fa-circle-notch fa-spin" style="font-size: 48px; color: var(--primary); margin-bottom: 20px;"></i>
+        <p style="font-size: 18px; color: var(--text-dark); font-weight: 600;">Loading Live Orders...</p>
+    </div>
+
     <!-- SCRIPTS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
@@ -997,6 +1030,9 @@
         let menuItems = [];
 
         onAuthStateChanged(auth, user => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) loadingScreen.style.display = 'none';
+
             if (!user) {
                 window.location.href = 'admin.html';
             } else {
@@ -1273,3 +1309,4 @@
 </body>
 
 </html>
+<script src="js/navbar-loader.js"></script>
