@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == "owner@chefscafe.com";
+    }
+
+    // =========================
+    // CATEGORIES
+    // =========================
+    match /categories/{categoryId} {
+      allow read: if true;        // public menu needs this
+      allow create, update, delete: if isAdmin();
+    }
+
+    // =========================
+    // MENU ITEMS
+    // =========================
+    match /menu_items/{itemId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // =========================
+    // BILLS
+    // =========================
+    match /bills/{billId} {
+      allow get, list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // =========================
+    // COUNTERS
+    // =========================
+    match /counters/{docId} {
+      allow get, list, write: if isAdmin();
+    }
+
+    // =========================
+    // DAILY SALES
+    // =========================
+    match /daily_sales/{date} {
+      allow get, list, write: if isAdmin();
+    }
+
+    // BLOCK UNKNOWN
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

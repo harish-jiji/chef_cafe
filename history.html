@@ -499,6 +499,20 @@
             }
         });
 
+        function startBadgeListener() {
+            const interval = setInterval(() => {
+                const badge = document.getElementById('live-orders-badge');
+                if (badge) {
+                    clearInterval(interval);
+                    const q = query(collection(db, "bills"), where("status", "==", "DRAFT"));
+                    onSnapshot(q, (snap) => {
+                        badge.innerText = snap.size;
+                        badge.style.display = snap.size > 0 ? 'inline-block' : 'none';
+                    });
+                }
+            }, 500);
+        }
+
         window.logout = () => {
             signOut(auth).then(() => {
                 window.location.href = 'admin.html';
@@ -711,6 +725,6 @@
         };
     </script>
 </body>
-<script src="js/navbar-loader.js"></script>
 
 </html>
+<script src="js/navbar-loader.js"></script>

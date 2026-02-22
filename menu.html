@@ -63,39 +63,11 @@
             <div class="category-select-wrapper">
                 <select id="categorySelect" class="category-select" aria-label="Select menu category">
                     <option value="all" selected>All Items</option>
-                    <option value="soup">Soups</option>
-                    <option value="salads">Salads</option>
-                    <option value="starter">Starter</option>
-                    <option value="maincourses">Main Courses</option>
-                    <option value="chefspecial">Chefs Special</option>
-                    <option value="asianmain">Asian Main Courses</option>
-                    <option value="asiannonveg">Asian Non Veg</option>
-                    <option value="asianveg">Asian Veg</option>
-                    <option value="kerala">Kerala Style</option>
-                    <option value="bread">Bread</option>
-                    <option value="grill">Grill Items</option>
-                    <option value="crispy">Crispy Bookzz</option>
-                    <option value="beverages">Beverages</option>
-                    <option value="cafespecials">Cafe Specials</option>
                 </select>
             </div>
 
             <div class="category-nav">
                 <button class="category-btn active" data-category="all">All Items</button>
-                <button class="category-btn" data-category="soup">Soups</button>
-                <button class="category-btn" data-category="salads">Salads</button>
-                <button class="category-btn" data-category="starter">Starter</button>
-                <button class="category-btn" data-category="maincourses">Main Courses</button>
-                <button class="category-btn" data-category="chefspecial">Chefs Special</button>
-                <button class="category-btn" data-category="asianmain">Asian Main Courses</button>
-                <button class="category-btn" data-category="asiannonveg">Asian Non Veg</button>
-                <button class="category-btn" data-category="asianveg">Asian Veg</button>
-                <button class="category-btn" data-category="kerala">Kerala Style</button>
-                <button class="category-btn" data-category="bread">Bread</button>
-                <button class="category-btn" data-category="grill">Grill Items</button>
-                <button class="category-btn" data-category="crispy">Crispy Bookzz</button>
-                <button class="category-btn" data-category="beverages">Beverages</button>
-                <button class="category-btn" data-category="cafespecials">Cafe Specials</button>
             </div>
         </div>
     </section>
@@ -105,75 +77,7 @@
         <div class="container">
             <div id="menu-container">
 
-                <div class="menu-section" id="soup">
-                    <h2 class="menu-section-title">Soups</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="salads">
-                    <h2 class="menu-section-title">Salads</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="starter">
-                    <h2 class="menu-section-title">Starter</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="maincourses">
-                    <h2 class="menu-section-title">Main Courses</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="chefspecial">
-                    <h2 class="menu-section-title">Chef’s Special</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="asianmain">
-                    <h2 class="menu-section-title">Asian Main Courses</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="asiannonveg">
-                    <h2 class="menu-section-title">Asian Non Veg</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="asianveg">
-                    <h2 class="menu-section-title">Asian Veg</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="kerala">
-                    <h2 class="menu-section-title">Kerala Style</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="bread">
-                    <h2 class="menu-section-title">Bread</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="grill">
-                    <h2 class="menu-section-title">Grill Items</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="crispy">
-                    <h2 class="menu-section-title">Crispy Bookzz</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="beverages">
-                    <h2 class="menu-section-title">Beverages</h2>
-                    <div class="menu-grid"></div>
-                </div>
-
-                <div class="menu-section" id="cafespecials">
-                    <h2 class="menu-section-title">Cafe Specials</h2>
-                    <div class="menu-grid"></div>
-                </div>
+                <!-- Categories and items will be loaded dynamically here -->
 
             </div>
         </div>
@@ -224,41 +128,106 @@
     </script>
 
     <script>
-        const sections = document.querySelectorAll(".menu-section");
+        // Use a global variable to store category buttons and sections after they are created
+        let dynamicCategoryBtns = [];
+        let dynamicMenuSections = [];
 
-        // Clear grids
-        sections.forEach(section => {
-            section.querySelector(".menu-grid").innerHTML = "";
-        });
+        // DYNAMIC CATEGORY LOADING
+        const categoryQuery = db.collection("categories").orderBy("order");
 
-        db.collection("menu_items").onSnapshot(snapshot => {
+        categoryQuery.onSnapshot(catSnap => {
+            const nav = document.querySelector(".category-nav");
+            const mobileSelect = document.getElementById("categorySelect");
+            const container = document.getElementById("menu-container");
 
-            snapshot.forEach(doc => {
-                const item = doc.data();
+            // Reset
+            nav.innerHTML = '<button class="category-btn active" data-category="all">All Items</button>';
+            mobileSelect.innerHTML = '<option value="all" selected>All Items</option>';
+            container.innerHTML = "";
 
-                // Match Firebase category with section ID
-                const section = document.getElementById(item.category);
-                if (!section) return;
+            catSnap.forEach(catDoc => {
+                const cat = catDoc.data();
 
-                const grid = section.querySelector(".menu-grid");
+                // Add to Nav
+                const catId = cat.name.toLowerCase().replace(/\s+/g, '-');
+                nav.innerHTML += `<button class="category-btn" data-category="${cat.name}">${cat.name}</button>`;
 
-                grid.innerHTML += `
-        <div class="menu-item">
-          <div class="menu-item-content">
-            <h3>${item.name}</h3>
-          </div>
-          <div class="menu-price">₹${item.price}</div>
-        </div>
-      `;
+                // Add to Mobile Select
+                mobileSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+
+                container.innerHTML += `
+                    <div class="menu-section" id="${cat.name}">
+                        <h2 class="menu-section-title">${cat.name}</h2>
+                        <div class="menu-grid"></div>
+                    </div>
+                `;
             });
 
-        }, (error) => {
-            console.error("Menu fetch error:", error);
-            // Optional: Show error to user, but for menu we might just log it as it's public
-            if (error.code === 'permission-denied') {
-                console.warn("User does not have permission to view menu items");
-            }
+            // Re-bind listeners
+            bindDynamicListeners();
+            loadMenuItems();
         });
+
+        function bindDynamicListeners() {
+            const btns = document.querySelectorAll('.category-btn');
+            const sections = document.querySelectorAll('.menu-section');
+            const select = document.getElementById('categorySelect');
+
+            function filter(category) {
+                sections.forEach(sec => {
+                    if (category === 'all' || sec.id === category) {
+                        sec.style.display = 'block';
+                    } else {
+                        sec.style.display = 'none';
+                    }
+                });
+            }
+
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const cat = btn.getAttribute('data-category');
+                    filter(cat);
+                    if (select) select.value = cat;
+                });
+            });
+
+            if (select) {
+                select.addEventListener('change', (e) => {
+                    const cat = e.target.value;
+                    filter(cat);
+                    btns.forEach(b => b.classList.toggle('active', b.getAttribute('data-category') === cat));
+                    const target = cat === 'all' ? document.querySelector('.menu-items') : document.getElementById(cat);
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            }
+        }
+
+        function loadMenuItems() {
+            db.collection("menu_items").onSnapshot(snapshot => {
+                // Clear existing grids before refilling
+                document.querySelectorAll(".menu-grid").forEach(grid => grid.innerHTML = "");
+
+                snapshot.forEach(doc => {
+                    const item = doc.data();
+
+                    const section = document.getElementById(item.category);
+                    if (!section) return;
+
+                    const grid = section.querySelector(".menu-grid");
+
+                    grid.innerHTML += `
+                        <div class="menu-item">
+                            <div class="menu-item-content">
+                                <h3>${item.name}</h3>
+                            </div>
+                            <div class="menu-price">₹${item.price}</div>
+                        </div>
+                    `;
+                });
+            });
+        }
     </script>
 
     <script src="js/script.js"></script>
